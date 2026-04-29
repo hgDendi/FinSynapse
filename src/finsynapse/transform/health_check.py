@@ -30,6 +30,9 @@ PLAUSIBLE_BOUNDS: dict[str, tuple[float, float]] = {
     "cn_social_financing_12m": (5e4, 1e7),    # 12m rolling sum, 亿元 scale
     "cn_north_5d": (-2000.0, 2000.0),         # 5-day net flow, 亿元
     "cn_south_5d": (-2000.0, 3000.0),
+    # --- Phase 1c additions ---
+    "cn_a_turnover_5d": (1e8, 1e12),          # 5d-mean of (SSE+SZSE) volume in shares
+    "hk_ewh_yield_ttm": (0.1, 12.0),          # TTM dividend yield % — 0.7-6.9 historically
 }
 
 # How many trailing-window stdevs constitutes a "jump". 5σ is intentionally

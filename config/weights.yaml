@@ -27,19 +27,26 @@ indicator_weights:
     csi300_pe_ttm:           { weight: 0.5, direction: "+" }
     csi300_pb:               { weight: 0.5, direction: "+" }
   cn_sentiment:
-    # Northbound 5d net-buy. AkShare upstream stops publishing daily flow
-    # in mid-2024 (regulator change) — recent dates degrade to NaN, calc
-    # auto-renormalizes. Historical backtest still works.
-    cn_north_5d:             { weight: 1.0, direction: "+" }   # inflow = warm
+    # Northbound 5d net-buy. AkShare upstream stopped publishing daily flow
+    # in mid-2024 (regulator change). After Phase 1c we co-weight with
+    # A-share total turnover (5d mean), which IS still daily and gives a
+    # broader participation signal. North-flow gets the heavier weight
+    # because it captures *foreign* sentiment specifically; turnover blends
+    # foreign + domestic. When north flow goes NaN (post-2024-08), calc
+    # renormalizes turnover to 100% — degraded but not blank.
+    cn_north_5d:             { weight: 0.5, direction: "+" }   # inflow = warm
+    cn_a_turnover_5d:        { weight: 0.5, direction: "+" }   # high participation = warm
   cn_liquidity:
     cn_m2_yoy:               { weight: 0.5, direction: "+" }   # higher M2 growth = looser
     cn_social_financing_12m: { weight: 0.5, direction: "+" }   # higher credit creation = looser
 
-  # --- HK (Phase 1b, partial) ------------------------------------------
-  # HSI PE/PB has no free CI-friendly source (HKEX/HangSeng don't expose);
-  # leaving valuation empty causes calc to renormalize over sentiment+liquidity.
-  # Per plan §11.6 'data_quality' tag will reflect this.
-  hk_valuation: {}
+  # --- HK (Phase 1c) ---------------------------------------------------
+  hk_valuation:
+    # HSI PE/PB has no free source. EWH (iShares MSCI HK ETF, US-listed)
+    # has 30y daily history with reliable dividends → use TTM dividend
+    # yield as inverse-valuation proxy. Direction "-" because HIGH yield
+    # = CHEAP = COLD valuation temperature.
+    hk_ewh_yield_ttm:        { weight: 1.0, direction: "-" }
   hk_sentiment:
     # Southbound 5d net-buy. AH-premium index and HSI options PCR both
     # unavailable for free (plan §11.6 fallback) → south flow alone.

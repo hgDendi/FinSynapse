@@ -9,6 +9,7 @@ from finsynapse.providers.akshare_flow import run as run_akshare_flow
 from finsynapse.providers.base import FetchRange
 from finsynapse.providers.fred import run as run_fred
 from finsynapse.providers.multpl import run as run_multpl
+from finsynapse.providers.yfinance_hk import run as run_yfinance_hk
 from finsynapse.providers.yfinance_macro import run as run_yfinance_macro
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="FinSynapse CLI")
@@ -24,6 +25,7 @@ app.add_typer(notify_app, name="notify")
 
 SOURCES = {
     "yfinance_macro": run_yfinance_macro,
+    "yfinance_hk": run_yfinance_hk,
     "multpl": run_multpl,
     "fred": run_fred,
     "akshare_cn": run_akshare_cn,
@@ -62,15 +64,30 @@ def ingest_all(
     fr = FetchRange(start=start_date, end=end_date)
     typer.echo(f"[ingest all] range={start_date}..{end_date}")
 
+    succeeded = 0
+    skipped = 0
+    failed = 0
     for name, fn in SOURCES.items():
         if name == "fred" and not settings.fred_api_key:
             typer.secho(f"  - {name}: SKIPPED (FRED_API_KEY not set)", fg=typer.colors.YELLOW)
+            skipped += 1
             continue
         try:
             df, path = fn(fr)
             typer.secho(f"  ✓ {name}: {len(df):,} rows -> {path}", fg=typer.colors.GREEN)
+            succeeded += 1
         except Exception as exc:
             typer.secho(f"  ✗ {name}: {type(exc).__name__}: {exc}", fg=typer.colors.RED)
+            failed += 1
+
+    typer.echo(f"\n[ingest all] {succeeded} ok, {skipped} skipped, {failed} failed")
+    # Exit non-zero only when more than half of attempted (non-skipped) sources
+    # failed. One flaky upstream shouldn't break the whole workflow, but a
+    # systemic outage should — so the workflow's failure-issue step fires.
+    attempted = succeeded + failed
+    if attempted > 0 and failed * 2 > attempted:
+        typer.secho(f"FATAL: majority of sources failed ({failed}/{attempted})", fg=typer.colors.RED)
+        raise typer.Exit(code=1)
 
 
 @transform_app.command("run")

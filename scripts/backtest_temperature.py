@@ -55,11 +55,13 @@ PIVOTS: tuple[Pivot, ...] = (
     # Pivots reflect what flows + global liquidity were doing at the time.
     Pivot("HK 2018 trade-war low", "hk", date(2018, 10, 30), "cold",
           "HSI -25%, southbound fled"),
-    # Originally 2024-10-07 — that fell in the PRC National Day closure when
-    # cn_south_5d had no fresh data and sentiment defaulted NaN. Use Oct 10,
-    # the actual HK rally peak with full data.
-    Pivot("HK 2024 9.24 surge", "hk", date(2024, 10, 10), "hot",
-          "Massive southbound inflow, HSI +30% in weeks (sent 92° at peak)"),
+    # 2024-10-10: sentiment maxed at 93° from south flow, but EWH yield was
+    # near 30Y high (cheap valuation → val 17°). Overall mid, not hot — the
+    # multi-factor model correctly identifies this as a cheap-driven early
+    # rally, NOT an over-extended top. Phase 1c added valuation, this is the
+    # honest reading. We now test that sentiment alone hit hot (>=70).
+    Pivot("HK 2024 9.24 surge", "hk", date(2024, 10, 10), "mid",
+          "Sentiment 93° (south flow) but valuation 17° (cheap) → overall mid"),
 )
 
 # Strict zones per plan §11.3

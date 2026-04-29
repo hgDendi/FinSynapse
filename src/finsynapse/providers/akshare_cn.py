@@ -5,6 +5,8 @@ Sources (validated by scripts/probe_akshare.py 2026-04-29):
     - stock_index_pb_lg(symbol="沪深300") — CSI300 PB history (same period)
     - macro_china_money_supply()         — M2 monthly (219 rows)
     - macro_china_shrzgm()               — Social Financing increment monthly (132 rows)
+    - stock_zh_index_daily(sh000001)     — SSE composite incl. volume (8,631 rows from 1991)
+    - stock_zh_index_daily(sz399001)     — SZSE component incl. volume (8,539 rows)
 """
 from __future__ import annotations
 
@@ -35,6 +37,12 @@ def _m2() -> pd.DataFrame:
 @lru_cache(maxsize=4)
 def _shrzgm() -> pd.DataFrame:
     return ak.macro_china_shrzgm()
+
+
+@lru_cache(maxsize=4)
+def _index_volume(symbol: str) -> pd.DataFrame:
+    """SSE/SZSE daily index incl. exchange-level volume."""
+    return ak.stock_zh_index_daily(symbol=symbol)
 
 
 def _slice_dates(df: pd.DataFrame, start: date, end: date, date_col: str = "date") -> pd.DataFrame:
@@ -81,6 +89,29 @@ class AkShareCnProvider(Provider):
             "source_symbol": "macro_china_money_supply/M2-同比",
         }).dropna(subset=["value"])
         records.append(_slice_dates(m2_long, fetch_range.start, fetch_range.end))
+
+        # --- A-share total turnover (daily) — SSE + SZSE volume, 5d mean ---
+        # CN sentiment proxy after northbound daily detail stopped publishing
+        # mid-2024. High participation = warm; low (dried-up) = cold.
+        sse = _index_volume("sh000001").copy()
+        szse = _index_volume("sz399001").copy()
+        sse["date"] = pd.to_datetime(sse["date"]).dt.date
+        szse["date"] = pd.to_datetime(szse["date"]).dt.date
+        merged = pd.merge(
+            sse[["date", "volume"]].rename(columns={"volume": "sse_vol"}),
+            szse[["date", "volume"]].rename(columns={"volume": "szse_vol"}),
+            on="date", how="outer",
+        ).sort_values("date").reset_index(drop=True)
+        merged["total_vol"] = merged["sse_vol"].fillna(0) + merged["szse_vol"].fillna(0)
+        # 5-day rolling mean smooths out single-day noise (e.g. half-day sessions).
+        merged["smoothed"] = merged["total_vol"].rolling(5).mean()
+        turnover_long = pd.DataFrame({
+            "date": merged["date"],
+            "value": merged["smoothed"],
+            "indicator": "cn_a_turnover_5d",
+            "source_symbol": "stock_zh_index_daily/sh000001+sz399001/volume-5d-mean",
+        }).dropna(subset=["value"])
+        records.append(_slice_dates(turnover_long, fetch_range.start, fetch_range.end))
 
         # --- Social Financing 12m rolling sum (monthly) ---
         # `增量` is monthly flow (亿元); take 12m trailing sum to get a stable

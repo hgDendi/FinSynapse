@@ -196,7 +196,7 @@ def _call_ollama(prompt: str, model: str = "qwen2.5:7b", timeout: int = 120) -> 
     return r.json().get("response", "").strip()
 
 
-def _call_deepseek(prompt: str, model: str = "deepseek-chat", timeout: int = 60) -> str:
+def _call_deepseek(prompt: str, model: str = "deepseek-chat", timeout: int = 300) -> str:
     api_key = _cfg.settings.deepseek_api_key
     if not api_key:
         raise RuntimeError("no DEEPSEEK_API_KEY")

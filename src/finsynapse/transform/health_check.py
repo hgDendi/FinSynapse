@@ -23,6 +23,13 @@ PLAUSIBLE_BOUNDS: dict[str, tuple[float, float]] = {
     "gold_futures": (300.0, 10000.0),
     "us_pe_ttm": (3.0, 200.0),
     "us_cape": (5.0, 100.0),
+    # --- Phase 1b additions ---
+    "csi300_pe_ttm": (3.0, 100.0),
+    "csi300_pb": (0.5, 10.0),
+    "cn_m2_yoy": (-5.0, 50.0),                # historical 6-30%; allow some headroom
+    "cn_social_financing_12m": (5e4, 1e7),    # 12m rolling sum, 亿元 scale
+    "cn_north_5d": (-2000.0, 2000.0),         # 5-day net flow, 亿元
+    "cn_south_5d": (-2000.0, 3000.0),
 }
 
 # How many trailing-window stdevs constitutes a "jump". 5σ is intentionally
@@ -66,7 +73,8 @@ def check(macro_long: pd.DataFrame) -> tuple[pd.DataFrame, list[HealthIssue]]:
             fail_keys.add((row["_dt"], indicator))
 
         # Rule 2: Zero (suspect for prices/rates that should never be 0)
-        if indicator not in {"us10y_real_yield"}:  # real rate can legitimately cross 0
+        # Real rate, north/south flows can legitimately be 0 or negative.
+        if indicator not in {"us10y_real_yield", "cn_north_5d", "cn_south_5d"}:
             zero_mask = g["value"] == 0
             for _, row in g[zero_mask].iterrows():
                 issues.append(

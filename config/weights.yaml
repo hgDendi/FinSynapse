@@ -22,14 +22,32 @@ indicator_weights:
     us10y_real_yield: { weight: 0.5, direction: "-" }   # higher real rate = tighter = cold
     dxy:              { weight: 0.5, direction: "-" }   # stronger dollar = tighter global liquidity = cold
 
-  # CN/HK kept as stubs in Phase 1a — populate with akshare providers in Phase 1b.
-  # Listed here so the calculator skips them with a clear "unavailable" reason.
-  cn_valuation: {}
-  cn_sentiment: {}
-  cn_liquidity: {}
+  # --- CN (Phase 1b) ---------------------------------------------------
+  cn_valuation:
+    csi300_pe_ttm:           { weight: 0.5, direction: "+" }
+    csi300_pb:               { weight: 0.5, direction: "+" }
+  cn_sentiment:
+    # Northbound 5d net-buy. AkShare upstream stops publishing daily flow
+    # in mid-2024 (regulator change) — recent dates degrade to NaN, calc
+    # auto-renormalizes. Historical backtest still works.
+    cn_north_5d:             { weight: 1.0, direction: "+" }   # inflow = warm
+  cn_liquidity:
+    cn_m2_yoy:               { weight: 0.5, direction: "+" }   # higher M2 growth = looser
+    cn_social_financing_12m: { weight: 0.5, direction: "+" }   # higher credit creation = looser
+
+  # --- HK (Phase 1b, partial) ------------------------------------------
+  # HSI PE/PB has no free CI-friendly source (HKEX/HangSeng don't expose);
+  # leaving valuation empty causes calc to renormalize over sentiment+liquidity.
+  # Per plan §11.6 'data_quality' tag will reflect this.
   hk_valuation: {}
-  hk_sentiment: {}
-  hk_liquidity: {}
+  hk_sentiment:
+    # Southbound 5d net-buy. AH-premium index and HSI options PCR both
+    # unavailable for free (plan §11.6 fallback) → south flow alone.
+    cn_south_5d:             { weight: 1.0, direction: "+" }
+  hk_liquidity:
+    # HK liquidity tracks USD funding conditions (plan §11.2 — HK borrows US).
+    us10y_real_yield:        { weight: 0.5, direction: "-" }
+    dxy:                     { weight: 0.5, direction: "-" }
 
 # Percentile window used by the temperature calculator (must match a key in
 # transform.percentile.WINDOWS).

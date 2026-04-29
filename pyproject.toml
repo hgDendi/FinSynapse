@@ -7,6 +7,7 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "akshare>=1.18.59",
     "beautifulsoup4>=4.14.3",
     "jinja2>=3.1.6",
     "lxml>=6.1.0",

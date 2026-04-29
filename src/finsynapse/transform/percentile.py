@@ -16,15 +16,18 @@ WINDOWS = {
 
 # Indicators with mixed monthly/daily frequency must be ffill'd onto a daily
 # index before percentile, otherwise the rolling window sees only ~12 points/y.
-MONTHLY_INDICATORS = {"us_cape", "us_pe_ttm"}
+MONTHLY_INDICATORS = {"us_cape", "us_pe_ttm", "cn_m2_yoy", "cn_social_financing_12m"}
 
 
-def _to_daily(series: pd.Series) -> pd.Series:
+def _to_daily(series: pd.Series, end: pd.Timestamp | None = None) -> pd.Series:
     """Reindex a non-daily series onto a business-day grid via forward-fill.
-    Series must be indexed by date (ascending)."""
+    Series must be indexed by date (ascending). When `end` is provided (use the
+    global silver max date), ffill carries the last known value forward — this
+    matters for monthly indicators (M2, CAPE) that publish with lag."""
     if series.empty:
         return series
-    idx = pd.date_range(series.index.min(), series.index.max(), freq="B")
+    end_dt = end if end is not None else series.index.max()
+    idx = pd.date_range(series.index.min(), end_dt, freq="B")
     return series.reindex(idx, method="ffill")
 
 
@@ -37,13 +40,17 @@ def compute_percentiles(macro_long: pd.DataFrame) -> pd.DataFrame:
     if macro_long.empty:
         return pd.DataFrame(columns=["date", "indicator", "value", "pct_1y", "pct_5y", "pct_10y"])
 
+    # Global max date across all indicators — monthly series ffill up to here
+    # so percentile/temperature have current values even when M2 lags by 2 months.
+    global_max = pd.to_datetime(macro_long["date"]).max()
+
     out_frames: list[pd.DataFrame] = []
     for indicator, group in macro_long.groupby("indicator"):
         s = group.set_index(pd.to_datetime(group["date"]))["value"].sort_index()
         # Drop duplicate timestamps if any (e.g. same date from multiple sources after dedup)
         s = s[~s.index.duplicated(keep="last")]
         if indicator in MONTHLY_INDICATORS:
-            s = _to_daily(s)
+            s = _to_daily(s, end=global_max)
 
         result = pd.DataFrame({"value": s})
         for label, window in WINDOWS.items():

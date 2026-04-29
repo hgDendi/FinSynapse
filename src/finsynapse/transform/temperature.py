@@ -149,9 +149,15 @@ def compute_temperature(percentile_long: pd.DataFrame, cfg: WeightsConfig | None
                 "liquidity": sub_temps["liquidity"].values,
             }
         )
-        # Tag rows where any sub is unavailable
-        missing_subs = [s for s in SUB_NAMES if s not in avail_w]
-        df["data_quality"] = ",".join(f"{s}_unavailable" for s in missing_subs) if missing_subs else "ok"
+        # Per-row data_quality reflects ACTUAL nan presence (not just config),
+        # so a row where M2 lags or north flow stopped publishing is flagged
+        # accurately. This drives the dashboard's "data_quality: foo_unavailable"
+        # warning per plan §11.6.
+        def _row_quality(row: pd.Series) -> str:
+            missing = [s for s in SUB_NAMES if pd.isna(row[s])]
+            return ",".join(f"{s}_unavailable" for s in missing) if missing else "ok"
+
+        df["data_quality"] = df.apply(_row_quality, axis=1)
         rows.append(df)
 
     if not rows:

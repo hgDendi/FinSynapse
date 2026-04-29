@@ -76,28 +76,44 @@ def test_percentile_endpoints_are_extreme():
 
 
 def test_temperature_handles_missing_indicators_gracefully(tmp_path):
-    """Missing CN/HK data should leave those markets empty without crashing US."""
-    cfg = WeightsConfig.load()
-    # Build long pct frame with ONLY US indicators (mimics Phase 1a state)
+    """When a market has no indicators configured, calculator must skip it
+    without affecting other markets. Uses an inline config (not the live yaml)
+    so the test stays valid even as Phase 1b/2 add real CN/HK indicators."""
+    # Inline config: only US has indicators; CN/HK explicitly empty.
+    cfg = WeightsConfig(
+        sub_weights={
+            "cn": {"valuation": 0.5, "sentiment": 0.3, "liquidity": 0.2},
+            "hk": {"valuation": 0.6, "sentiment": 0.25, "liquidity": 0.15},
+            "us": {"valuation": 0.4, "sentiment": 0.35, "liquidity": 0.25},
+        },
+        indicator_weights={
+            "us_valuation": {
+                "us_pe_ttm": {"weight": 0.5, "direction": "+"},
+                "us_cape": {"weight": 0.5, "direction": "+"},
+            },
+            "us_sentiment": {"vix": {"weight": 1.0, "direction": "-"}},
+            "us_liquidity": {"dxy": {"weight": 1.0, "direction": "-"}},
+            "cn_valuation": {}, "cn_sentiment": {}, "cn_liquidity": {},
+            "hk_valuation": {}, "hk_sentiment": {}, "hk_liquidity": {},
+        },
+        percentile_window="pct_10y",
+    )
     n = 50
     pct = pd.DataFrame(
         {
             "date": pd.bdate_range("2026-01-01", periods=n).date.tolist() * 4,
             "indicator": ["us_pe_ttm"] * n + ["us_cape"] * n + ["vix"] * n + ["dxy"] * n,
-            "value": list(np.linspace(15, 30, n)) * 4,  # arbitrary
+            "value": list(np.linspace(15, 30, n)) * 4,
             "pct_1y": [50.0] * (n * 4),
             "pct_5y": [60.0] * (n * 4),
             "pct_10y": [70.0] * (n * 4),
         }
     )
     temp = compute_temperature(pct, cfg)
-    # US should have data; CN/HK should not appear (no indicators)
     markets = set(temp["market"].unique())
     assert "us" in markets
-    # CN/HK have empty indicator_weights blocks → no rows produced
     assert "cn" not in markets
     assert "hk" not in markets
-    # All US sub-temps available
     us_last = temp[temp["market"] == "us"].iloc[-1]
     assert us_last["data_quality"] == "ok"
 
@@ -105,7 +121,18 @@ def test_temperature_handles_missing_indicators_gracefully(tmp_path):
 def test_temperature_renormalizes_when_one_sub_unavailable(tmp_path):
     """If liquidity inputs are missing, valuation+sentiment must still produce
     a sensible overall (renormalized weights), with data_quality flagging."""
-    cfg = WeightsConfig.load()
+    cfg = WeightsConfig(
+        sub_weights={"us": {"valuation": 0.4, "sentiment": 0.35, "liquidity": 0.25}},
+        indicator_weights={
+            "us_valuation": {
+                "us_pe_ttm": {"weight": 0.5, "direction": "+"},
+                "us_cape": {"weight": 0.5, "direction": "+"},
+            },
+            "us_sentiment": {"vix": {"weight": 1.0, "direction": "-"}},
+            "us_liquidity": {"dxy": {"weight": 1.0, "direction": "-"}},
+        },
+        percentile_window="pct_10y",
+    )
     n = 30
     pct = pd.DataFrame(
         {

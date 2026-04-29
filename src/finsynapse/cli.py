@@ -4,6 +4,8 @@ from datetime import date, timedelta
 
 import typer
 
+from finsynapse.providers.akshare_cn import run as run_akshare_cn
+from finsynapse.providers.akshare_flow import run as run_akshare_flow
 from finsynapse.providers.base import FetchRange
 from finsynapse.providers.fred import run as run_fred
 from finsynapse.providers.multpl import run as run_multpl
@@ -22,6 +24,8 @@ SOURCES = {
     "yfinance_macro": run_yfinance_macro,
     "multpl": run_multpl,
     "fred": run_fred,
+    "akshare_cn": run_akshare_cn,
+    "akshare_flow": run_akshare_flow,
 }
 
 

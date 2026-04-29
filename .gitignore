@@ -1,0 +1,47 @@
+# --- 本地规划与草稿（不入库）---
+docs/_local/
+**/*.local.md
+.scratch/
+
+# --- 数据层（按需放开）---
+# Bronze/Silver 原始与中间数据：默认不入库，靠 GitHub Actions 每日重建
+data/bronze/
+data/silver/
+# Gold 层（洞察/简评）默认入库，便于版本对比；如不需要，取消下一行注释
+# data/gold/
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+dist/
+build/
+*.egg-info/
+
+# --- 环境变量与密钥 ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets.yaml
+
+# --- 编辑器 / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.pytest_cache/
+
+# --- 向量库 / 缓存 ---
+.chroma/
+chroma_db/
+.cache/
+*.sqlite
+*.duckdb

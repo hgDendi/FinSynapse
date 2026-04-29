@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
 <meta charset="utf-8">
-<title>FinSynapse — Macro Thermometer ({{ asof }})</title>
+<title>{{ tx.page_title }} ({{ asof }})</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
@@ -16,7 +16,7 @@
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
@@ -25,9 +25,27 @@
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
   }
+  .header-text { flex: 1; min-width: 0; }
   header h1 { margin: 0; font-size: 22px; font-weight: 600; }
   header .meta { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+  .lang-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+  .lang-toggle:hover { background: #F3F4F6; border-color: #D1D5DB; }
   main { max-width: 1280px; margin: 0 auto; padding: 24px 16px 80px; }
   section { margin-bottom: 32px; }
   section h2 { font-size: 16px; font-weight: 600; margin: 0 0 12px; color: var(--text); }
@@ -36,6 +54,7 @@
   .grid.cols-1 { grid-template-columns: 1fr; }
   @media (max-width: 900px) {
     .grid.cols-3 { grid-template-columns: 1fr; }
+    header { flex-direction: column; }
   }
   .card {
     background: var(--surface);
@@ -72,13 +91,16 @@
 </head>
 <body>
 <header>
-  <h1>🌡️ FinSynapse — Macro Thermometer</h1>
-  <div class="meta">Data as of <strong>{{ asof }}</strong> · auto-rebuilt by GitHub Actions · weights in <code>config/weights.yaml</code></div>
+  <div class="header-text">
+    <h1>{{ tx.header_title }}</h1>
+    <div class="meta">{{ tx.data_as_of }} <strong>{{ asof }}</strong> · {{ tx.data_meta_suffix }} <code>config/weights.yaml</code></div>
+  </div>
+  <a href="{{ alt_lang_href }}" class="lang-toggle" title="{{ tx.lang_toggle_hint }}">{{ tx.lang_toggle_label }}</a>
 </header>
 <main>
 
 <section>
-  <h2>Market temperatures</h2>
+  <h2>{{ tx.section_market_temps }}</h2>
   <div class="grid cols-3">
     {% for market in markets %}
     <div class="card">
@@ -87,10 +109,10 @@
         <div id="radar_{{ market }}"></div>
         <div id="attrib_{{ market }}"></div>
         {% if data_quality.get(market, 'ok') != 'ok' %}
-          <div class="data-quality">data_quality: {{ data_quality[market] }}</div>
+          <div class="data-quality">{{ tx.data_quality_label }}: {{ data_quality[market] }}</div>
         {% endif %}
       {% else %}
-        <div class="empty"><strong>{{ market | upper }}</strong><br>no data yet — Phase 1b adds AkShare</div>
+        <div class="empty"><strong>{{ market | upper }}</strong><br>{{ tx.no_data_card }}</div>
       {% endif %}
     </div>
     {% endfor %}
@@ -98,17 +120,17 @@
 </section>
 
 <section>
-  <h2>Long-history temperature ({{ history_market | upper }})</h2>
+  <h2>{{ tx.section_long_history }} ({{ history_market | upper }})</h2>
   <div class="card"><div id="time_series"></div></div>
 </section>
 
 <section>
-  <h2>Divergence signals (last 90 days)</h2>
+  <h2>{{ tx.section_divergence }}</h2>
   <div class="card"><div id="divergence"></div></div>
   {% if divergence_table %}
   <div class="card" style="margin-top:12px; overflow-x:auto;">
     <table>
-      <thead><tr><th>date</th><th>pair</th><th class="num">a Δ</th><th class="num">b Δ</th><th class="num">strength</th><th>signal</th></tr></thead>
+      <thead><tr><th>{{ tx.th_date }}</th><th>{{ tx.th_pair }}</th><th class="num">{{ tx.th_a_change }}</th><th class="num">{{ tx.th_b_change }}</th><th class="num">{{ tx.th_strength }}</th><th>{{ tx.th_signal }}</th></tr></thead>
       <tbody>
         {% for row in divergence_table %}
         <tr>
@@ -127,18 +149,18 @@
 </section>
 
 <section>
-  <h2>Data health</h2>
+  <h2>{{ tx.section_data_health }}</h2>
   <div class="card">
     {% if not health_summary %}
-      <div class="empty">No health issues recorded.</div>
+      <div class="empty">{{ tx.no_health_issues }}</div>
     {% else %}
       <p style="margin:0 0 12px; font-size:13px; color: var(--text-muted);">
-        <strong>{{ health_summary.total }}</strong> issues
+        <strong>{{ health_summary.total }}</strong> {{ tx.issues_total }}
         ({{ health_summary.fail }} fail / {{ health_summary.warn }} warn)
       </p>
       <div style="overflow-x:auto;">
       <table>
-        <thead><tr><th>date</th><th>indicator</th><th>rule</th><th>severity</th><th>detail</th></tr></thead>
+        <thead><tr><th>{{ tx.th_date }}</th><th>{{ tx.th_indicator }}</th><th>{{ tx.th_rule }}</th><th>{{ tx.th_severity }}</th><th>{{ tx.th_detail }}</th></tr></thead>
         <tbody>
           {% for row in health_table %}
           <tr>
@@ -157,9 +179,7 @@
 </section>
 
 </main>
-<footer>
-  FinSynapse · Plan §11 thermometer · <a href="https://github.com/" style="color:var(--text-muted)">source</a>
-</footer>
+<footer>{{ tx.footer }}</footer>
 
 <script>
   {% for market, fig_json in gauges.items() %}

@@ -139,14 +139,15 @@ def dashboard_serve(
 
 @dashboard_app.command("render")
 def dashboard_render(
-    out: str = typer.Option("dist/index.html", "--out", "-o", help="Output HTML path"),
+    out_dir: str = typer.Option("dist", "--out-dir", "-o", help="Output directory (default zh -> index.html, en -> en.html)"),
 ) -> None:
-    """Render the dashboard as a single static HTML file (for GitHub Pages)."""
+    """Render bilingual static HTML dashboard for GitHub Pages."""
     from pathlib import Path
     from finsynapse.dashboard.render_static import render
 
-    path = render(Path(out))
-    typer.secho(f"[dashboard] static HTML rendered -> {path}", fg=typer.colors.GREEN)
+    paths = render(Path(out_dir))
+    for p in paths:
+        typer.secho(f"[dashboard] rendered -> {p} ({p.stat().st_size:,} bytes)", fg=typer.colors.GREEN)
 
 
 if __name__ == "__main__":

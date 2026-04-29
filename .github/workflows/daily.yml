@@ -72,6 +72,9 @@ jobs:
         # The brief is content the team reviews historically; check it into
         # the repo (small markdown, no binary), not just an artifact. Skips
         # cleanly when nothing changed (e.g. transform aborted earlier).
+        # Retries with rebase on push rejection — the workflow runs for a
+        # few minutes, and a manual push to main during that window would
+        # otherwise hard-fail this step.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -83,7 +86,24 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/gold/brief/
           git commit -m "chore(brief): daily macro brief $(date -u +%Y-%m-%d)"
-          git push origin HEAD:${{ github.ref_name }}
+
+          branch="${{ github.ref_name }}"
+          for attempt in 1 2 3; do
+            git fetch origin "$branch"
+            # Rebase our brief commit on top of any concurrent main pushes
+            # (data/gold/brief/*.md is the only file we touch — no conflict
+            # possible unless two daily runs raced, which concurrency:
+            # cancel-in-progress: false already prevents).
+            git rebase "origin/$branch" || { git rebase --abort; exit 1; }
+            if git push origin "HEAD:$branch"; then
+              echo "[brief] pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "[brief] push rejected on attempt $attempt — retrying after rebase"
+            sleep 2
+          done
+          echo "[brief] push still failing after 3 attempts — giving up"
+          exit 1
 
       - name: Push state-change notifications (skipped if no secrets)
         env:

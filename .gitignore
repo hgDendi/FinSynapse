@@ -32,6 +32,9 @@ build/
 *.pem
 secrets.yaml
 
+# --- Build output ---
+dist/
+
 # --- 编辑器 / OS ---
 .vscode/
 .idea/

@@ -12,8 +12,10 @@ from finsynapse.providers.yfinance_macro import run as run_yfinance_macro
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="FinSynapse CLI")
 ingest_app = typer.Typer(no_args_is_help=True, help="Ingest raw data into bronze layer")
 transform_app = typer.Typer(no_args_is_help=True, help="Transform bronze -> silver layer")
+dashboard_app = typer.Typer(no_args_is_help=True, help="Local Streamlit app + static HTML for GH Pages")
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(transform_app, name="transform")
+app.add_typer(dashboard_app, name="dashboard")
 
 
 SOURCES = {
@@ -118,6 +120,33 @@ def transform_run(
             if not today_div.empty:
                 typer.echo("recent divergences:")
                 typer.echo(today_div[["date", "pair_name", "strength", "description"]].to_string(index=False))
+
+
+@dashboard_app.command("serve")
+def dashboard_serve(
+    port: int = typer.Option(8501, "--port", "-p"),
+) -> None:
+    """Run the Streamlit app locally for interactive exploration."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    app_path = Path(__file__).parent / "dashboard" / "app.py"
+    cmd = [sys.executable, "-m", "streamlit", "run", str(app_path), "--server.port", str(port)]
+    typer.echo(f"[dashboard] launching streamlit on http://localhost:{port}")
+    subprocess.run(cmd, check=False)
+
+
+@dashboard_app.command("render")
+def dashboard_render(
+    out: str = typer.Option("dist/index.html", "--out", "-o", help="Output HTML path"),
+) -> None:
+    """Render the dashboard as a single static HTML file (for GitHub Pages)."""
+    from pathlib import Path
+    from finsynapse.dashboard.render_static import render
+
+    path = render(Path(out))
+    typer.secho(f"[dashboard] static HTML rendered -> {path}", fg=typer.colors.GREEN)
 
 
 if __name__ == "__main__":

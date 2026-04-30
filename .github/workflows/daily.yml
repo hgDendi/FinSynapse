@@ -32,10 +32,10 @@ jobs:
       issues: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -121,7 +121,7 @@ jobs:
         run: uv run finsynapse notify check
 
       - name: Upload silver as artifact (30-day retention)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: silver-${{ github.run_id }}
           path: data/silver/
@@ -139,7 +139,7 @@ jobs:
 
       - name: Open issue on failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const today = new Date().toISOString().slice(0, 10);

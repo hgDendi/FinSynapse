@@ -15,4 +15,9 @@
     </span>
   </div>
   <div class="text-right mt-1 opacity-60">{{ asof or '' }}</div>
+  {% if clarity_project_id %}
+  <div class="text-right mt-1 opacity-60 normal-case tracking-normal">
+    {{ tx.footer_analytics }} · <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener" class="underline hover:text-ink-soft">{{ tx.footer_analytics_link }}</a>
+  </div>
+  {% endif %}
 </footer>

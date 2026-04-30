@@ -66,6 +66,12 @@ jobs:
         run: uv run finsynapse report brief --provider deepseek --model deepseek-v4-pro || true
 
       - name: Render bilingual static dashboard
+        # CLARITY_PROJECT_ID drives the Microsoft Clarity tracking snippet
+        # injected into every page's <head>. Stored as a repo Variable (not
+        # secret — IDs are public, embedded in the rendered HTML anyway).
+        # When unset, the partial renders to nothing and pages stay un-tracked.
+        env:
+          CLARITY_PROJECT_ID: ${{ vars.CLARITY_PROJECT_ID }}
         run: uv run finsynapse dashboard render --out-dir dist
 
       - name: Commit generated brief back to main

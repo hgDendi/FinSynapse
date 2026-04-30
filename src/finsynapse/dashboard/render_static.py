@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from pathlib import Path
 from types import SimpleNamespace
@@ -29,6 +30,16 @@ from finsynapse.transform.temperature import WeightsConfig
 
 # Public source repo — surfaced in the footer and on the glossary page.
 REPO_URL = "https://github.com/hgDendi/FinSynapse"
+
+
+def _clarity_id() -> str | None:
+    """Microsoft Clarity project ID, injected via the CLARITY_PROJECT_ID env var
+    (set in the daily.yml workflow from a repo Variable). Absent in local dev so
+    previews don't pollute production analytics — the partial renders to nothing
+    when this is None."""
+    val = os.environ.get("CLARITY_PROJECT_ID", "").strip()
+    return val or None
+
 
 # Map of market code -> display metadata used by the redesigned card UI.
 # Colours mirror the chart palette (charts.py) so a card and its embedded
@@ -366,6 +377,8 @@ def _render_one(
         archive_href=archive_href,
         glossary_href=glossary_href,
         repo_url=REPO_URL,
+        clarity_project_id=_clarity_id(),
+        page_type="dashboard",
         asof=data.asof().date().isoformat(),
         markets=MARKETS,
         gauges=gauges,
@@ -487,6 +500,8 @@ def _render_glossary_pages(env: Environment, out_dir: Path, data: DashboardData,
             asof=data.asof().date().isoformat() if data.asof() is not None else "",
             markets_meta=_build_glossary_markets(weights, lang),
             history_rows=_build_glossary_history_rows(history_stats, lang),
+            clarity_project_id=_clarity_id(),
+            page_type="glossary",
         )
         target = out_dir / GLOSSARY_FILENAME[lang]
         target.write_text(html, encoding="utf-8")
@@ -521,7 +536,14 @@ def _render_brief_pages(env: Environment, out_dir: Path, briefs: list[BriefMeta]
         # 2. rendered html
         body_md = b.path.read_text(encoding="utf-8")
         body_html = Markup(_md.markdown(body_md, extensions=["extra"]))
-        html = template.render(tx=tx, asof=b.asof, body_html=body_html)
+        html = template.render(
+            tx=tx,
+            asof=b.asof,
+            body_html=body_html,
+            clarity_project_id=_clarity_id(),
+            page_type="brief_daily",
+            lang=DEFAULT_LANG,
+        )
         html_dest = brief_out / f"{b.asof}.html"
         html_dest.write_text(html, encoding="utf-8")
         written.append(html_dest)
@@ -549,6 +571,8 @@ def _render_archive_index(env: Environment, out_dir: Path, briefs: list[BriefMet
             dashboard_href=dashboard_href,
             repo_url=REPO_URL,
             asof=asof,
+            clarity_project_id=_clarity_id(),
+            page_type="brief_archive",
         )
         target = out_dir / ARCHIVE_FILENAME[lang]
         target.write_text(html, encoding="utf-8")

@@ -36,6 +36,7 @@
   article ul { padding-left: 22px; margin: 8px 0 14px; }
   article hr { border: none; border-top: 1px solid rgba(0,0,0,0.08); margin: 28px 0; }
 </style>
+{% include '_clarity.html.j2' %}
 </head>
 <body class="min-h-screen pb-20">
 
@@ -60,6 +61,11 @@
 
 <footer class="max-w-[860px] mx-auto px-6 mt-12 pt-8 border-t border-black/5 text-xs uppercase tracking-wider text-center" style="color: var(--ink-muted);">
   {{ tx.footer }}
+  {% if clarity_project_id %}
+  <div class="mt-2 normal-case tracking-normal opacity-70">
+    {{ tx.footer_analytics }} · <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener" class="underline">{{ tx.footer_analytics_link }}</a>
+  </div>
+  {% endif %}
 </footer>
 </body>
 </html>

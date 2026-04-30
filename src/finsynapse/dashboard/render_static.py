@@ -335,7 +335,17 @@ def _render_one(
         gauges[market] = _fig_to_json(charts.gauge(market, row["overall"], row.get("overall_change_1w"), lang))
         data_quality[market] = row.get("data_quality", "ok")
 
-    time_series_json = _fig_to_json(charts.time_series(data.temperature, history_market, lang))
+    # Build one time-series figure per market that has any temperature history,
+    # so the template can switch client-side without a re-render. `history_market`
+    # is the initially-active tab.
+    time_series_by_market: dict[str, str] = {}
+    for market in MARKETS:
+        if (data.temperature["market"] == market).any():
+            time_series_by_market[market] = _fig_to_json(
+                charts.time_series(data.temperature, market, lang)
+            )
+    if history_market not in time_series_by_market and time_series_by_market:
+        history_market = next(iter(time_series_by_market))
     divergence_json = _fig_to_json(charts.divergence_recent(data.divergence, lang=lang))
 
     cross_market_input = {
@@ -384,7 +394,8 @@ def _render_one(
         gauges=gauges,
         data_quality=data_quality,
         history_market=history_market,
-        time_series_json=time_series_json,
+        time_series_by_market=time_series_by_market,
+        market_meta=MARKET_META,
         cross_market_json=cross_market_json,
         divergence_json=divergence_json,
         narrative_html=narrative_html,

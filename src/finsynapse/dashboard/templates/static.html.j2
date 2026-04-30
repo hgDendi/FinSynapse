@@ -296,10 +296,22 @@
       <div id="cross_market_radar" class="mt-2"></div>
     </div>
     <div class="glass rounded-2xl p-6 relative overflow-hidden">
-      <h3 class="font-bold flex items-center gap-2">
-        <span class="material-symbols-outlined accent-coral">trending_up</span>
-        {{ tx.section_long_history }} ({{ history_market | upper }})
-      </h3>
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <h3 class="font-bold flex items-center gap-2">
+          <span class="material-symbols-outlined accent-coral">trending_up</span>
+          {{ tx.section_long_history }}
+        </h3>
+        {% if time_series_by_market and time_series_by_market | length > 1 %}
+        <div id="time_series_tabs" class="inline-flex rounded-lg bg-white/40 border border-white/60 p-0.5 text-xs font-semibold">
+          {% for m in time_series_by_market.keys() %}
+          <button type="button" data-market="{{ m }}"
+            class="ts-tab px-2.5 py-1 rounded-md transition {% if m == history_market %}bg-white text-ink shadow-sm{% else %}text-ink-muted hover:text-ink-soft{% endif %}">
+            {{ market_meta[m].label }}
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
       <div id="time_series" class="mt-2"></div>
     </div>
   </section>
@@ -421,7 +433,34 @@
   Plotly.newPlot('gauge_{{ market }}', {{ fig_json | safe }}.data, {{ fig_json | safe }}.layout, PLOT_CFG);
   {% endfor %}
   Plotly.newPlot('cross_market_radar', {{ cross_market_json | safe }}.data, {{ cross_market_json | safe }}.layout, PLOT_CFG);
-  Plotly.newPlot('time_series', {{ time_series_json | safe }}.data, {{ time_series_json | safe }}.layout, PLOT_CFG);
+  // Long-history time-series: one figure per market, swap in place on tab click
+  // so we never re-fetch and Plotly handles the transition (Plotly.react diffs
+  // traces vs newPlot which tears down the DOM).
+  const TIME_SERIES_FIGS = {
+    {% for m, fig_json in time_series_by_market.items() %}
+    '{{ m }}': {{ fig_json | safe }},
+    {% endfor %}
+  };
+  const TS_INIT = '{{ history_market }}';
+  if (TIME_SERIES_FIGS[TS_INIT]) {
+    Plotly.newPlot('time_series', TIME_SERIES_FIGS[TS_INIT].data, TIME_SERIES_FIGS[TS_INIT].layout, PLOT_CFG);
+  }
+  document.querySelectorAll('#time_series_tabs .ts-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const m = btn.dataset.market;
+      const fig = TIME_SERIES_FIGS[m];
+      if (!fig) return;
+      Plotly.react('time_series', fig.data, fig.layout, PLOT_CFG);
+      document.querySelectorAll('#time_series_tabs .ts-tab').forEach(b => {
+        const active = b.dataset.market === m;
+        b.classList.toggle('bg-white', active);
+        b.classList.toggle('text-ink', active);
+        b.classList.toggle('shadow-sm', active);
+        b.classList.toggle('text-ink-muted', !active);
+        b.classList.toggle('hover:text-ink-soft', !active);
+      });
+    });
+  });
   // Detail-on-demand divergence scatter (collapsed)
   const divEl = document.getElementById('divergence');
   if (divEl) {

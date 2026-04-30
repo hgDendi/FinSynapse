@@ -18,8 +18,9 @@ def vcr_config() -> dict:
 def tmp_data_dir(tmp_path, monkeypatch) -> Path:
     """Redirect bronze/silver/gold writes into a tmp dir so tests don't touch real data."""
     monkeypatch.setenv("FINSYNAPSE_DATA_DIR", str(tmp_path))
-    # Reload settings to pick up the env override
+    # Reload settings to pick up the env override. monkeypatch.setattr
+    # restores the original `cfg.settings` after the test, preventing leakage.
     from finsynapse import config as cfg
 
-    cfg.settings = cfg.Settings()
+    monkeypatch.setattr(cfg, "settings", cfg.Settings())
     return tmp_path

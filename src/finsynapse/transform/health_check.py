@@ -34,12 +34,12 @@ PLAUSIBLE_BOUNDS: dict[str, tuple[float, float]] = {
     "cn_a_turnover_5d": (1e8, 1e12),  # 5d-mean of (SSE+SZSE) volume in shares
     "hk_ewh_yield_ttm": (0.1, 12.0),  # TTM dividend yield % — 0.7-6.9 historically
     # --- Phase 1d additions (P0+P1 indicator expansion) ---
-    "us_hy_oas": (1.0, 25.0),         # BAML HY OAS, %; historical 2.4-22 (2008 peak)
-    "us_nfci": (-2.0, 5.0),           # Chicago Fed NFCI, z-like (negative=loose)
-    "us_erp": (-3.0, 12.0),           # real ERP, %; can briefly go negative when rates spike
+    "us_hy_oas": (1.0, 25.0),  # BAML HY OAS, %; historical 2.4-22 (2008 peak)
+    "us_nfci": (-2.0, 5.0),  # Chicago Fed NFCI, z-like (negative=loose)
+    "us_erp": (-3.0, 12.0),  # real ERP, %; can briefly go negative when rates spike
     "cn_margin_balance": (10.0, 6e4),  # SH+SZ 融资融券余额, 亿元; 2010 launch ~10亿, 2025 peak ~30000+亿
-    "cn_dr007": (0.5, 15.0),          # SHIBOR-1W, %; 0.8-12 historical incl. 2013 钱荒
-    "hk_hibor_1m": (0.01, 12.0),      # HIBOR-1M, %; 0.05-7 historical
+    "cn_dr007": (0.5, 15.0),  # SHIBOR-1W, %; 0.8-12 historical incl. 2013 钱荒
+    "hk_hibor_1m": (0.01, 12.0),  # HIBOR-1M, %; 0.05-7 historical
 }
 
 # How many trailing-window stdevs constitutes a "jump". 5σ is intentionally

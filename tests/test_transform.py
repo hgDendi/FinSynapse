@@ -214,8 +214,7 @@ def test_derive_indicators_guards_against_non_positive_pe():
             "date": [d.date() for d in dates] * 2,
             "indicator": ["us_pe_ttm"] * 10 + ["us10y_real_yield"] * 10,
             # Mix of poison values: 0, negative, and one valid 20.0 at the end
-            "value": [0.0, 0.0, -5.0, -2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 20.0]
-            + [1.5] * 10,
+            "value": [0.0, 0.0, -5.0, -2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 20.0] + [1.5] * 10,
             "source": ["multpl"] * 10 + ["fred"] * 10,
         }
     )
@@ -226,6 +225,7 @@ def test_derive_indicators_guards_against_non_positive_pe():
     assert 3.4 < erp["value"].iloc[0] < 3.6
     # Critically: no inf or negative ERP smuggled through
     import numpy as np
+
     assert not np.isinf(erp["value"]).any()
 
 
@@ -311,8 +311,8 @@ def test_temperature_per_indicator_window_override():
             "pct_1y": [10.0] * (n * 2),
             # pe_ttm reads pct_10y=80; cape reads pct_5y=40 (override).
             # Equal weight → val ~= (80 + 40) / 2 = 60.
-            "pct_5y": [99.0] * n + [40.0] * n,    # pe_ttm 99 must NOT be picked
-            "pct_10y": [80.0] * n + [99.0] * n,   # cape 99 must NOT be picked
+            "pct_5y": [99.0] * n + [40.0] * n,  # pe_ttm 99 must NOT be picked
+            "pct_10y": [80.0] * n + [99.0] * n,  # cape 99 must NOT be picked
         }
     )
     temp = compute_temperature(pct, cfg)

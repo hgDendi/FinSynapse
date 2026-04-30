@@ -248,10 +248,7 @@ def _call_anthropic(prompt: str, model: str = "claude-haiku-4-5-20251001", timeo
 def call_llm(prompt: str, provider: str = "auto", model: str | None = None) -> LLMResult:
     """Try providers in order; return first success. `provider="auto"` walks
     ollama -> deepseek -> anthropic. Explicit provider skips the fallback."""
-    if provider == "auto":
-        order = ["ollama", "deepseek", "anthropic"]
-    else:
-        order = [provider]
+    order = ["ollama", "deepseek", "anthropic"] if provider == "auto" else [provider]
 
     last_err = None
     for p in order:

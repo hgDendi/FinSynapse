@@ -96,7 +96,7 @@ def radar(market: str, sub_temps: dict[str, float], lang: str = DEFAULT_LANG) ->
     fig.add_trace(
         go.Scatterpolar(
             r=[30] * 4,
-            theta=cats + [cats[0]],
+            theta=[*cats, cats[0]],
             mode="lines",
             line=dict(color="rgba(30,58,138,0.35)", dash="dot"),
             showlegend=False,
@@ -106,7 +106,7 @@ def radar(market: str, sub_temps: dict[str, float], lang: str = DEFAULT_LANG) ->
     fig.add_trace(
         go.Scatterpolar(
             r=[70] * 4,
-            theta=cats + [cats[0]],
+            theta=[*cats, cats[0]],
             mode="lines",
             line=dict(color="rgba(248,113,113,0.35)", dash="dot"),
             showlegend=False,
@@ -115,8 +115,8 @@ def radar(market: str, sub_temps: dict[str, float], lang: str = DEFAULT_LANG) ->
     )
     fig.add_trace(
         go.Scatterpolar(
-            r=vals + [vals[0]],
-            theta=cats + [cats[0]],
+            r=[*vals, vals[0]],
+            theta=[*cats, cats[0]],
             fill="toself",
             line=dict(color=color, width=2),
             opacity=0.45,
@@ -144,7 +144,7 @@ def cross_market_radar(latest_per_market: dict[str, dict[str, float]], lang: str
     the visual vocabulary is consistent.
     """
     cats = [t("valuation", lang), t("sentiment", lang), t("liquidity", lang)]
-    theta = cats + [cats[0]]
+    theta = [*cats, cats[0]]
     market_colors = {"cn": COLOR_COLD, "hk": COLOR_MID, "us": COLOR_HOT}
 
     fig = go.Figure()
@@ -169,13 +169,13 @@ def cross_market_radar(latest_per_market: dict[str, dict[str, float]], lang: str
         color = market_colors.get(market, "#6B7280")
         fig.add_trace(
             go.Scatterpolar(
-                r=plot_vals + [plot_vals[0]],
+                r=[*plot_vals, plot_vals[0]],
                 theta=theta,
                 fill="toself",
                 opacity=0.30,
                 line=dict(color=color, width=2),
                 name=market.upper(),
-                customdata=[[hv] for hv in hover_vals + [hover_vals[0]]],
+                customdata=[[hv] for hv in [*hover_vals, hover_vals[0]]],
                 hovertemplate="%{theta}: %{customdata[0]}<extra>" + market.upper() + "</extra>",
             )
         )

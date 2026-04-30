@@ -15,9 +15,9 @@ from dataclasses import dataclass
 from datetime import date
 
 import pandas as pd
-import requests
 
 from finsynapse.providers.base import FetchRange, Provider
+from finsynapse.providers.retry import requests_session
 
 UA = {"User-Agent": "Mozilla/5.0 (FinSynapse data fetch)"}
 BASE = "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/{year}/all"
@@ -60,7 +60,7 @@ class TreasuryRealYieldProvider(Provider):
     def _fetch_year(self, year: int) -> pd.DataFrame:
         url = BASE.format(year=year)
         params = {**PARAMS, "field_tdr_date_value": str(year)}
-        r = requests.get(url, params=params, headers=UA, timeout=30)
+        r = requests_session().get(url, params=params, headers=UA, timeout=(5, 30))
         r.raise_for_status()
         raw = pd.read_csv(io.StringIO(r.text))
         if raw.empty or "Date" not in raw.columns:

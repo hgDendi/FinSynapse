@@ -147,7 +147,7 @@ def _build_market_cards(
         hist = history_stats.get(market)
         history_widget = None
         if hist is not None:
-            pct_int = int(round(hist["today_pct"]))
+            pct_int = round(hist["today_pct"])
             history_widget = {
                 "pct": pct_int,
                 "hover": t("card_history_pct_hover", lang).format(pct=pct_int),
@@ -161,7 +161,7 @@ def _build_market_cards(
                 "meta": meta,
                 "missing": False,
                 "overall": float(overall) if overall is not None and not pd.isna(overall) else None,
-                "overall_int": int(round(overall)) if overall is not None and not pd.isna(overall) else None,
+                "overall_int": round(overall) if overall is not None and not pd.isna(overall) else None,
                 "change_1w": None if (change_1w is None or pd.isna(change_1w)) else float(change_1w),
                 "zone_label": t(f"{zone_key}_label", lang),
                 "zone_key": zone_key,
@@ -486,10 +486,7 @@ def _render_glossary_pages(env: Environment, out_dir: Path, data: DashboardData,
     for lang in SUPPORTED:
         alt_lang = next(other for other in SUPPORTED if other != lang)
         # Match the dashboard's "default lang lives at index.html" convention.
-        if alt_lang == DEFAULT_LANG:
-            alt_lang_href = GLOSSARY_FILENAME[DEFAULT_LANG]
-        else:
-            alt_lang_href = GLOSSARY_FILENAME[alt_lang]
+        alt_lang_href = GLOSSARY_FILENAME[DEFAULT_LANG] if alt_lang == DEFAULT_LANG else GLOSSARY_FILENAME[alt_lang]
         dashboard_href = "index.html" if lang == DEFAULT_LANG else LANG_FILENAME[lang]
         html = template.render(
             lang=lang,

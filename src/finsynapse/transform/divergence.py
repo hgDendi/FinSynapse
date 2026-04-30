@@ -120,10 +120,7 @@ def compute_divergence(macro_long: pd.DataFrame) -> pd.DataFrame:
         valid = a.notna() & b.notna() & (a != 0) & (b != 0)
 
         same_sign = (a > 0) == (b > 0)
-        if pair.expected == "same":
-            divergent = ~same_sign
-        else:
-            divergent = same_sign
+        divergent = ~same_sign if pair.expected == "same" else same_sign
 
         strength = a.abs() * b.abs() * 100  # scale for readability
 

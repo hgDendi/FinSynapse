@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from datetime import date
 
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 
 from finsynapse.providers.base import FetchRange, Provider
+from finsynapse.providers.retry import requests_session
 
 
 @dataclass(frozen=True)
@@ -47,7 +47,7 @@ class MultplProvider(Provider):
 
     def _fetch_one(self, table: MultplTable) -> pd.DataFrame:
         url = f"{BASE}/{table.slug}/table/by-month"
-        r = requests.get(url, headers=UA, timeout=20)
+        r = requests_session().get(url, headers=UA, timeout=(5, 30))
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "lxml")
         html_table = soup.find("table", {"id": "datatable"}) or soup.find("table")

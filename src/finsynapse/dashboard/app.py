@@ -37,7 +37,7 @@ def main() -> None:
     # --- Top: per-market gauge + radar + attribution -----------------------
     st.subheader(t("section_market_temps", lang))
     cols = st.columns(len(MARKETS))
-    for col, market in zip(cols, MARKETS):
+    for col, market in zip(cols, MARKETS, strict=True):
         with col:
             row = latest.get(market)
             if row is None:

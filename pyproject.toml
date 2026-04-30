@@ -53,18 +53,21 @@ src = ["src"]
 extend-exclude = ["data", "dist", "scripts"]
 
 [tool.ruff.lint]
-# Conservative selection — focus on real bugs and import hygiene first.
-# We can layer `B` (bugbear), `SIM` (simplify), `RUF` later once the team
-# is used to ruff in CI without flooding diffs on every refactor.
 select = [
   "E",   # pycodestyle errors
   "F",   # pyflakes (unused imports, undefined names)
   "I",   # isort
   "W",   # pycodestyle warnings
   "UP",  # pyupgrade (modern syntax for our py311 floor)
+  "B",   # flake8-bugbear (common bug patterns)
+  "SIM", # flake8-simplify (simplify code)
+  "RUF", # ruff-specific checks
 ]
 ignore = [
-  "E501",  # line-length is enforced by the formatter, not the linter
+  "E501",   # line-length is enforced by the formatter, not the linter
+  "RUF001", # ambiguous fullwidth chars are intentional (Chinese i18n strings, math)
+  "RUF002", # ambiguous dashes in docstrings are intentional (math/doc ranges)
+  "RUF003", # ambiguous chars in comments are intentional (Chinese, Greek, math)
 ]
 
 [tool.ruff.lint.per-file-ignores]

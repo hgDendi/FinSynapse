@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" class="light">
+<head>
+<meta charset="utf-8">
+<title>{{ tx.glossary_page_title }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #FAF9FE; --ink: #1c1b1b; --ink-soft: #46464a; --ink-muted: #77767b; }
+  body {
+    background-color: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    color: var(--ink);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .glass { background: rgba(255,255,255,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); box-shadow: 0 18px 40px rgba(0,0,0,0.04); }
+  .glass-strong { background: rgba(255,255,255,0.7); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.6); }
+  code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 0.85em; padding: 1px 6px; border-radius: 4px; background: rgba(0,0,0,0.05); }
+  .accent-navy { color:#1E3A8A; }
+  .accent-coral { color:#B91C1C; }
+  .accent-gold { color:#B45309; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(30,58,138,0.10); color:#1E3A8A; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  table.gloss-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  table.gloss-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted); padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  table.gloss-table td { padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 14px; vertical-align: top; }
+  table.gloss-table tr:last-child td { border-bottom: 0; }
+  .anchor-target { scroll-margin-top: 80px; }
+</style>
+</head>
+<body class="min-h-screen pb-20">
+
+<nav class="sticky top-0 z-40 glass-strong border-b border-white/40">
+  <div class="max-w-[960px] mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-xl">🌡️</span>
+      <span class="text-lg font-extrabold tracking-tight">FinSynapse</span>
+      <span class="hidden sm:inline-block text-xs uppercase tracking-widest text-[color:var(--ink-muted)] ml-2">{{ tx.glossary_page_title.split('·')[1].strip() if '·' in tx.glossary_page_title else tx.glossary_page_title }}</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{{ dashboard_href }}" class="px-3 py-1.5 rounded-full text-sm font-medium hover:bg-white/60 transition" style="color: var(--ink-soft);">{{ tx.glossary_back_to_dashboard }}</a>
+      <a href="{{ alt_lang_href }}" title="{{ tx.lang_toggle_hint }}" class="px-3 py-1.5 rounded-full text-sm font-semibold bg-white/60 hover:bg-white border border-white/60 transition">{{ tx.lang_toggle_label }}</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-[960px] mx-auto px-6 mt-12 space-y-12">
+
+  <!-- Hero / intro -->
+  <header>
+    <h1 class="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
+      <span class="text-3xl">🌡️</span>
+      {{ tx.glossary_intro_title }}
+    </h1>
+    <p class="mt-3 text-base leading-relaxed" style="color: var(--ink-soft);">
+      {{ tx.glossary_intro_body | safe }}
+    </p>
+  </header>
+
+  <!-- Step-by-step pipeline -->
+  <section id="how-it-works" class="anchor-target space-y-5">
+    {% for step in [
+      {'num': 1, 'title_key': 'glossary_step1_title', 'body_key': 'glossary_step1_body'},
+      {'num': 2, 'title_key': 'glossary_step2_title', 'body_key': 'glossary_step2_body'},
+      {'num': 3, 'title_key': 'glossary_step3_title', 'body_key': 'glossary_step3_body'},
+      {'num': 4, 'title_key': 'glossary_step4_title', 'body_key': 'glossary_step4_body'},
+    ] %}
+    <div class="glass rounded-2xl p-5 flex gap-4">
+      <span class="step-num">{{ step.num }}</span>
+      <div>
+        <h3 class="text-base font-bold mb-1">{{ tx[step.title_key] }}</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--ink-soft);">{{ tx[step.body_key] | safe }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- Compact formula card -->
+  <section id="formula" class="anchor-target">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-navy">function</span>
+      {{ tx.glossary_formula_title }}
+    </h2>
+    <div class="glass-strong rounded-2xl p-6 font-mono text-sm leading-relaxed overflow-x-auto" style="color: var(--ink);">
+      <div>indicator_pct = rolling_percentile(value, window=10y)</div>
+      <div>contribution = (direction == '+') ? indicator_pct : (100 − indicator_pct)</div>
+      <div>sub_temp     = Σ (contribution<sub>i</sub> × indicator_weight<sub>i</sub>) / Σ available_weight<sub>i</sub></div>
+      <div>overall      = val × w<sub>val</sub> + sent × w<sub>sent</sub> + liq × w<sub>liq</sub></div>
+      <div class="mt-3 text-[color:var(--ink-muted)] not-italic">// 0 ≤ overall ≤ 100 &nbsp;·&nbsp; &lt; 30 cold · 30–70 mid · ≥ 70 hot</div>
+    </div>
+  </section>
+
+  <!-- Per-market weights tables (data-driven from weights.yaml) -->
+  <section id="weights" class="anchor-target">
+    <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-navy">tune</span>
+      {{ tx.glossary_section_weights }}
+    </h2>
+    <p class="text-sm mb-5 leading-relaxed" style="color: var(--ink-soft);">{{ tx.glossary_weights_subtitle | safe }}</p>
+
+    <div class="space-y-6">
+      {% for m in markets_meta %}
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-white/40">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">{{ m.label }}</span>
+            <div>
+              <div class="font-semibold">{% if lang == 'zh' %}{{ m.name_zh }}{% else %}{{ m.name_en }}{% endif %}</div>
+              <div class="text-xs" style="color: var(--ink-muted);">{{ m.code | upper }}</div>
+            </div>
+          </div>
+          <div class="text-xs" style="color: var(--ink-muted);">
+            valuation {{ '%.0f' | format(m.sub_weights.valuation*100) }}%
+            · sentiment {{ '%.0f' | format(m.sub_weights.sentiment*100) }}%
+            · liquidity {{ '%.0f' | format(m.sub_weights.liquidity*100) }}%
+          </div>
+        </div>
+        <table class="gloss-table">
+          <thead>
+            <tr>
+              <th>{{ tx.glossary_th_sub }}</th>
+              <th>{{ tx.glossary_th_sub_weight }}</th>
+              <th>{{ tx.glossary_th_indicator }}</th>
+              <th>{{ tx.glossary_th_indicator_weight }}</th>
+              <th>{{ tx.glossary_th_direction }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in m.indicator_rows %}
+            <tr>
+              <td>{% if row.is_first_in_block %}<span class="font-semibold">{{ row.sub_label }}</span>{% endif %}</td>
+              <td class="tabular-nums">{% if row.is_first_in_block %}{{ '%.0f' | format(row.sub_weight*100) }}%{% endif %}</td>
+              <td><div>{{ row.indicator_plain }}</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>{{ row.indicator }}</code></div></td>
+              <td class="tabular-nums">{{ '%.0f' | format(row.weight*100) }}%</td>
+              <td class="text-xs">{% if row.direction == '+' %}{{ tx.glossary_dir_pos }}{% else %}{{ tx.glossary_dir_neg }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Historical extremes section (the hover target from market cards) -->
+  <section id="historical-extremes" class="anchor-target">
+    <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-coral">history</span>
+      {{ tx.glossary_section_history }}
+    </h2>
+    <p class="text-sm mb-3 leading-relaxed" style="color: var(--ink-soft);">{{ tx.glossary_history_subtitle | safe }}</p>
+    <p class="text-xs mb-5 leading-relaxed" style="color: var(--ink-muted);">{{ tx.glossary_history_pct_explainer | safe }}</p>
+
+    <div class="glass rounded-2xl overflow-hidden">
+      <table class="gloss-table">
+        <thead>
+          <tr>
+            <th>{{ tx.glossary_history_th_market }}</th>
+            <th>{{ tx.glossary_history_th_kind }}</th>
+            <th>{{ tx.glossary_history_th_date }}</th>
+            <th>{{ tx.glossary_history_th_temp }}</th>
+            <th>{{ tx.glossary_history_th_event }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in history_rows %}
+          <tr {% if row.is_today %}class="bg-white/40"{% endif %}>
+            <td><span class="font-semibold">{{ row.market_label }}</span></td>
+            <td class="text-sm">
+              {% if row.kind == 'hot' %}<span class="accent-coral font-medium">{{ tx.glossary_history_kind_hot }}</span>
+              {% elif row.kind == 'cold' %}<span class="accent-navy font-medium">{{ tx.glossary_history_kind_cold }}</span>
+              {% else %}<span class="accent-gold font-medium">{{ tx.glossary_history_kind_today }}</span>{% endif %}
+            </td>
+            <td class="tabular-nums text-sm">{{ row.date }}</td>
+            <td class="tabular-nums font-semibold">{{ '%.0f' | format(row.temperature) }}°{% if row.is_today %} <span class="text-xs font-normal" style="color: var(--ink-muted);">(P{{ '%.0f' | format(row.history_pct) }})</span>{% endif %}</td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              {% if row.event %}{{ row.event }}{% else %}<span style="color: var(--ink-muted);">{{ tx.glossary_history_no_event }}</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Caveats -->
+  <section id="caveats" class="anchor-target">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-gold">info</span>
+      {{ tx.glossary_section_caveats }}
+    </h2>
+    <div class="glass rounded-2xl p-6 text-sm leading-relaxed" style="color: var(--ink-soft);">
+      <ul class="list-disc pl-5 space-y-2">{{ tx.glossary_caveats | safe }}</ul>
+    </div>
+  </section>
+
+</main>
+
+{% include 'footer.html.j2' %}
+</body>
+</html>

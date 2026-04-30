@@ -123,15 +123,13 @@
         · {{ tx.data_meta_suffix }} <code class="font-mono text-xs px-1.5 py-0.5 rounded bg-white/60 border border-white/60">config/weights.yaml</code>
       </p>
     </div>
-    <details class="relative">
-      <summary class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full glass text-sm font-medium hover:bg-white/70 transition">
-        <span class="material-symbols-outlined text-base">help</span>
-        {{ tx.glossary_what_is_temp }}
-      </summary>
-      <div class="absolute right-0 mt-2 w-[320px] glass-strong rounded-xl p-4 text-sm text-ink-soft leading-relaxed z-30">
-        {{ tx.glossary_body | safe }}
-      </div>
-    </details>
+    <a href="{{ glossary_href }}"
+       title="{{ tx.glossary_body | striptags }}"
+       class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full glass text-sm font-medium hover:bg-white/70 transition">
+      <span class="material-symbols-outlined text-base">help</span>
+      {{ tx.glossary_what_is_temp }}
+      <span class="material-symbols-outlined text-sm opacity-70">arrow_outward</span>
+    </a>
   </header>
 
   {# ============================================================
@@ -217,6 +215,23 @@
 
           <!-- Gauge (Plotly indicator — drawn after page load) -->
           <div id="gauge_{{ c.market }}" class="-mx-2"></div>
+
+          {% if c.history %}
+          <!-- Historical percentile widget (links to glossary explainer) -->
+          <a href="{{ glossary_href }}#historical-extremes"
+             title="{{ c.history.hover }}"
+             class="group flex items-center justify-between gap-3 -mt-2 px-3 py-2 rounded-xl bg-white/40 hover:bg-white/70 transition border border-white/50">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="material-symbols-outlined text-base accent-{{ c.accent }}">history</span>
+              <span class="text-xs uppercase tracking-wider text-ink-muted">{{ tx.card_history_pct_label }}</span>
+              <span class="text-sm font-semibold tabular-nums">P{{ c.history.pct }}</span>
+            </div>
+            <div class="flex items-center gap-1 text-[11px] text-ink-muted group-hover:text-ink-soft truncate">
+              <span class="hidden sm:inline truncate">{{ c.history.extremes_hint }}</span>
+              <span class="material-symbols-outlined text-sm opacity-60">arrow_outward</span>
+            </div>
+          </a>
+          {% endif %}
 
           <!-- Sub-temps with plain-language alias (suggestion B) -->
           <div class="space-y-2.5">
@@ -397,10 +412,7 @@
 
 </main>
 
-<footer class="max-w-[1280px] mx-auto px-6 mt-16 pt-8 border-t border-black/5 text-xs uppercase tracking-wider text-ink-muted flex justify-between">
-  <span>{{ tx.footer }}</span>
-  <span>{{ asof }}</span>
-</footer>
+{% include 'footer.html.j2' %}
 
 <script>
   const PLOT_CFG = { responsive: true, displayModeBar: false };

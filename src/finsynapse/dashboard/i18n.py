@@ -89,6 +89,96 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "zh": "0–100 的综合分。<b>估值</b>看贵不贵、<b>情绪</b>看大家多兴奋、<b>流动性</b>看场内有多少钱。三者加权 → 综合温度。<b>0–30 偏冷</b>，<b>30–70 中性</b>，<b>70–100 偏热</b>。每天由 GitHub Actions 自动重算。",
         "en": "0–100 composite. <b>Valuation</b> = how pricey; <b>Sentiment</b> = how excited people are; <b>Liquidity</b> = how much money is in the system. Weighted → overall temperature. <b>0–30 Cold</b>, <b>30–70 Neutral</b>, <b>70–100 Hot</b>. Recomputed daily.",
     },
+    # --- Glossary explainer page ---
+    "glossary_page_title": {"zh": "FinSynapse · 温度计说明", "en": "FinSynapse · Thermometer guide"},
+    "glossary_back_to_dashboard": {"zh": "← 回到温度计", "en": "← Back to dashboard"},
+    "glossary_intro_title": {"zh": "市场温度计是什么", "en": "What the market thermometer is"},
+    "glossary_intro_body": {
+        "zh": "把<b>估值</b>、<b>情绪</b>、<b>流动性</b>三类指标，统一换算到 0–100 的相对刻度上。0 = 这个市场历史上最冷的水平；100 = 历史上最热。每天 06:00（北京时间）由 GitHub Actions 自动重算，所有数字都来自 silver 层、可在 git 历史里追溯。",
+        "en": "We collapse <b>valuation</b>, <b>sentiment</b>, and <b>liquidity</b> indicators onto a single 0–100 relative scale. 0 = the coldest the market has ever been within its lookback; 100 = the hottest ever. Recomputed every day at 22:00 UTC by GitHub Actions; all numbers come from the silver layer and are reproducible from git history.",
+    },
+    "glossary_step1_title": {
+        "zh": "第一步：把每个指标换成历史百分位",
+        "en": "Step 1: convert each indicator to its historical percentile",
+    },
+    "glossary_step1_body": {
+        "zh": "对每个指标（CAPE、VIX、社融、美元指数 …）取过去 <b>10 年</b>的滚动百分位作为基础信号。月频指标（CAPE、M2、社融）会先 forward-fill 到日度，避免窗口里只有十几条点。",
+        "en": "Each indicator (CAPE, VIX, social financing, DXY …) is converted to its trailing <b>10-year</b> rolling percentile. Monthly series (CAPE, M2, social financing) are forward-filled to daily first so the window has enough data points.",
+    },
+    "glossary_step2_title": {"zh": "第二步：按方向决定升降温", "en": "Step 2: direction determines hot or cold"},
+    "glossary_step2_body": {
+        "zh": "每个指标在 weights.yaml 里都标了一个方向：<code>+</code> 表示分位高 → 温度高（如 CAPE 高 = 估值贵 = 热）；<code>-</code> 表示分位高 → 温度低（如 VIX 高 = 恐慌 = 冷；DXY 强 = 全球流动性紧 = 冷）。",
+        "en": "Each indicator carries a direction in weights.yaml: <code>+</code> means high percentile → high temperature (e.g. high CAPE = expensive = hot); <code>-</code> means high percentile → low temperature (e.g. high VIX = fear = cold; strong DXY = tight global liquidity = cold).",
+    },
+    "glossary_step3_title": {"zh": "第三步：合成子温度", "en": "Step 3: combine into sub-temperatures"},
+    "glossary_step3_body": {
+        "zh": "在每个子项（估值 / 情绪 / 流动性）下，按权重加权平均所有可用指标。<b>缺失指标会自动按可用权重重归一</b>——比如港股期权 PCR 没有免费源时，HK 情绪不会拉垮，而是把 100% 权重给到南向 5 日。",
+        "en": "Within each sub-temperature (valuation / sentiment / liquidity) we take a weighted average across the available indicators. <b>Missing indicators auto-renormalise</b> — e.g. when HK options PCR has no free source, HK sentiment falls back to 100% on southbound 5d instead of going blank.",
+    },
+    "glossary_step4_title": {"zh": "第四步：合成综合温度", "en": "Step 4: combine into overall temperature"},
+    "glossary_step4_body": {
+        "zh": "三个子温度按市场各自的权重加权得到 <b>综合温度</b>（0–100）。区间：<b>&lt; 30 偏冷</b> · <b>30–70 中性</b> · <b>≥ 70 偏热</b>。",
+        "en": "The three sub-temperatures are combined per-market into the <b>overall temperature</b> (0–100). Bands: <b>&lt; 30 Cold</b> · <b>30–70 Neutral</b> · <b>≥ 70 Hot</b>.",
+    },
+    "glossary_formula_title": {"zh": "公式速览", "en": "Formula at a glance"},
+    "glossary_section_weights": {"zh": "各市场权重明细", "en": "Per-market weights"},
+    "glossary_weights_subtitle": {
+        "zh": "实时从 <code>config/weights.yaml</code> 读取——改完它再跑 <code>finsynapse transform run --layer temperature</code> 立刻生效。",
+        "en": "Loaded live from <code>config/weights.yaml</code> — edit and rerun <code>finsynapse transform run --layer temperature</code> to apply.",
+    },
+    "glossary_th_sub": {"zh": "子温度", "en": "Sub-temperature"},
+    "glossary_th_sub_weight": {"zh": "占比", "en": "Weight"},
+    "glossary_th_indicator": {"zh": "指标", "en": "Indicator"},
+    "glossary_th_indicator_weight": {"zh": "指标权重", "en": "Ind. weight"},
+    "glossary_th_direction": {"zh": "方向", "en": "Direction"},
+    "glossary_dir_pos": {"zh": "+ 分位高 → 热", "en": "+ high pct → hot"},
+    "glossary_dir_neg": {"zh": "− 分位高 → 冷", "en": "− high pct → cold"},
+    "glossary_section_history": {"zh": "历史极值与对应事件", "en": "Historical extremes & matched events"},
+    "glossary_history_subtitle": {
+        "zh": "下表展示每个市场综合温度的历史最热 / 最冷点，并匹配那段时间的代表性宏观事件。今天的「历史分位」就是当前温度在这条时间线里的位置。",
+        "en": "Below are the all-time hottest and coldest readings for each market's overall temperature, matched to the dominant macro event around that date. Today's \"historical percentile\" is where the current reading sits on this timeline.",
+    },
+    "glossary_history_th_market": {"zh": "市场", "en": "Market"},
+    "glossary_history_th_kind": {"zh": "类型", "en": "Type"},
+    "glossary_history_th_date": {"zh": "日期", "en": "Date"},
+    "glossary_history_th_temp": {"zh": "温度", "en": "Temp"},
+    "glossary_history_th_event": {"zh": "对应事件", "en": "Matched event"},
+    "glossary_history_kind_hot": {"zh": "🔥 历史最热", "en": "🔥 All-time hot"},
+    "glossary_history_kind_cold": {"zh": "🧊 历史最冷", "en": "🧊 All-time cold"},
+    "glossary_history_kind_today": {"zh": "📍 今日水平", "en": "📍 Today"},
+    "glossary_history_no_event": {"zh": "（区间内无显著事件标记）", "en": "(no labelled event in window)"},
+    "glossary_history_pct_explainer": {
+        "zh": "「历史分位」= 当前综合温度在自身有数据以来全部交易日里的百分位排序。99% 表示比历史上 99% 的日子都热。",
+        "en": '"Historical percentile" = where today\'s overall temperature ranks against every trading day since data started. 99% means hotter than 99% of historical days.',
+    },
+    "glossary_section_caveats": {"zh": "需要知道的几个细节", "en": "A few things worth knowing"},
+    "glossary_caveats": {
+        "zh": (
+            "<li><b>权重不会随时间变化</b>——一旦订就锁死，避免曲线拟合。一周温度变化的归因也是用这套固定权重做的。</li>"
+            "<li><b>10 年滚动窗口</b>意味着遇到从未有过的极端值会被压在 0 或 100。这是设计——温度计衡量的是「相对历史的位置」，不是绝对水平。</li>"
+            "<li><b>data_quality 字段</b>会标 <code>ok</code> / <code>partial</code> / <code>pcr_unavailable</code>。partial 表示当天有子分量缺数据；pcr_unavailable 是 HK 期权 PCR 永久无源的降级标记。</li>"
+            "<li><b>日报 (gold/brief)</b> 是另一回事——LLM 或模板只是把上面这些 silver 数字串成一段叙事，不会引入新计算。</li>"
+        ),
+        "en": (
+            "<li><b>Weights are frozen</b> once set — no curve fitting. Weekly attribution uses the same fixed weights.</li>"
+            '<li><b>The 10-year rolling window</b> means truly unprecedented extremes get clipped at 0 or 100. By design — the thermometer measures "position relative to history", not absolute level.</li>'
+            "<li><b>The data_quality field</b> tags rows as <code>ok</code> / <code>partial</code> / <code>pcr_unavailable</code>. partial = a sub-component was missing that day; pcr_unavailable = HK options PCR has no permanent free source.</li>"
+            "<li><b>The daily brief</b> in gold/ is just narrative — LLM or template stitches these silver numbers into prose, no new calculations.</li>"
+        ),
+    },
+    # Card-level historical percentile widget
+    "card_history_pct_label": {"zh": "历史分位", "en": "Hist. percentile"},
+    "card_history_pct_hover": {
+        "zh": "在自身有数据以来全部交易日中，今天的温度排第 {pct} 位。点击看详细公式与历史极值。",
+        "en": "Across every trading day since data started, today ranks at the {pct}th percentile. Click for the formula and historical extremes.",
+    },
+    "card_history_extremes_hint": {
+        "zh": "历史最热 {hot_temp:.0f}° · 最冷 {cold_temp:.0f}°",
+        "en": "All-time hot {hot_temp:.0f}° · cold {cold_temp:.0f}°",
+    },
+    # Footer
+    "footer_powered_by": {"zh": "源自", "en": "Powered by"},
+    "footer_repo_label": {"zh": "在 GitHub 上查看代码", "en": "view on GitHub"},
     "brief_meta": {
         "zh": "由本地 LLM/模板生成 · 数字均来自 silver",
         "en": "generated by local LLM/template · numbers sourced from silver",

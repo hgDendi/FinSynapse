@@ -13,6 +13,7 @@ from plotly.utils import PlotlyJSONEncoder
 
 from finsynapse.dashboard import charts
 from finsynapse.dashboard.data import MARKETS, DashboardData, load
+from finsynapse.dashboard.historical_events import event_label
 from finsynapse.dashboard.i18n import (
     DEFAULT_LANG,
     SUPPORTED,
@@ -24,6 +25,10 @@ from finsynapse.dashboard.i18n import (
     translate_div,
 )
 from finsynapse.report.brief import BriefMeta, list_briefs, load_latest_narrative
+from finsynapse.transform.temperature import WeightsConfig
+
+# Public source repo — surfaced in the footer and on the glossary page.
+REPO_URL = "https://github.com/hgDendi/FinSynapse"
 
 # Map of market code -> display metadata used by the redesigned card UI.
 # Colours mirror the chart palette (charts.py) so a card and its embedded
@@ -59,13 +64,48 @@ def _zone_token(value: float | None) -> tuple[str, str]:
     return "zone_mid", "gold"
 
 
-def _build_market_cards(latest: dict, data_quality: dict, lang: str) -> list[dict]:
+def _market_history_stats(temperature: pd.DataFrame) -> dict[str, dict]:
+    """For each market, compute all-time hot / cold dates and where today's
+    overall sits as a percentile within its own full history. Returned shape
+    keyed by market: { 'today_pct': 0–100, 'hot_date', 'hot_temp',
+    'cold_date', 'cold_temp', 'today_date', 'today_temp' }."""
+    if temperature.empty:
+        return {}
+    df = temperature.copy()
+    df["date"] = pd.to_datetime(df["date"])
+    out: dict[str, dict] = {}
+    for market in MARKETS:
+        sub = df[df["market"] == market].dropna(subset=["overall"]).sort_values("date")
+        if sub.empty:
+            continue
+        today_row = sub.iloc[-1]
+        today_temp = float(today_row["overall"])
+        # Inclusive rank (≤) so today's value itself counts.
+        today_pct = float((sub["overall"] <= today_temp).mean() * 100.0)
+        idx_hot = sub["overall"].idxmax()
+        idx_cold = sub["overall"].idxmin()
+        out[market] = {
+            "today_pct": today_pct,
+            "today_date": today_row["date"].date(),
+            "today_temp": today_temp,
+            "hot_date": sub.loc[idx_hot, "date"].date(),
+            "hot_temp": float(sub.loc[idx_hot, "overall"]),
+            "cold_date": sub.loc[idx_cold, "date"].date(),
+            "cold_temp": float(sub.loc[idx_cold, "overall"]),
+        }
+    return out
+
+
+def _build_market_cards(
+    latest: dict, data_quality: dict, lang: str, history_stats: dict[str, dict] | None = None
+) -> list[dict]:
     """Compose the per-market hero cards.
 
     Returns one dict per market with everything the template needs. Pre-
     computing in Python (rather than doing the math in Jinja) keeps the
     template close to pure presentation.
     """
+    history_stats = history_stats or {}
     cards = []
     for market in MARKETS:
         meta = MARKET_META[market]
@@ -92,6 +132,18 @@ def _build_market_cards(latest: dict, data_quality: dict, lang: str) -> list[dic
                     ),
                 }
             )
+        # Historical-percentile widget (suggestion #2 from this iteration).
+        hist = history_stats.get(market)
+        history_widget = None
+        if hist is not None:
+            pct_int = int(round(hist["today_pct"]))
+            history_widget = {
+                "pct": pct_int,
+                "hover": t("card_history_pct_hover", lang).format(pct=pct_int),
+                "extremes_hint": t("card_history_extremes_hint", lang).format(
+                    hot_temp=hist["hot_temp"], cold_temp=hist["cold_temp"]
+                ),
+            }
         cards.append(
             {
                 "market": market,
@@ -105,6 +157,7 @@ def _build_market_cards(latest: dict, data_quality: dict, lang: str) -> list[dic
                 "accent": accent,
                 "sub_temps": sub_temps,
                 "data_quality": data_quality.get(market, "ok"),
+                "history": history_widget,
             }
         )
     return cards
@@ -251,9 +304,17 @@ def _i18n_namespace(lang: str) -> SimpleNamespace:
     return SimpleNamespace(**{k: t(k, lang) for k in TRANSLATIONS})
 
 
-def _render_one(env: Environment, data: DashboardData, lang: str, alt_href: str, archive_href: str) -> str:
+def _render_one(
+    env: Environment,
+    data: DashboardData,
+    lang: str,
+    alt_href: str,
+    archive_href: str,
+    glossary_href: str,
+) -> str:
     latest = data.latest_per_market()
     history_market = next(iter(latest), MARKETS[0])
+    history_stats = _market_history_stats(data.temperature)
 
     # Per-market Plotly gauges (kept — the Plotly indicator looks better than
     # a hand-rolled CSS half-circle). Radar + attribution remain CSS-only in
@@ -283,7 +344,7 @@ def _render_one(env: Environment, data: DashboardData, lang: str, alt_href: str,
     narrative_md, narrative_asof = load_latest_narrative()
     narrative_html = Markup(_md.markdown(narrative_md, extensions=["extra"])) if narrative_md else ""
 
-    market_cards = _build_market_cards(latest, data_quality, lang)
+    market_cards = _build_market_cards(latest, data_quality, lang, history_stats)
     divergence_cards = _build_divergence_cards(data.divergence, lang)
     key_takeaways = _build_key_takeaways(data, latest, divergence_cards, lang)
 
@@ -303,6 +364,8 @@ def _render_one(env: Environment, data: DashboardData, lang: str, alt_href: str,
         tx=_i18n_namespace(lang),
         alt_lang_href=alt_href,
         archive_href=archive_href,
+        glossary_href=glossary_href,
+        repo_url=REPO_URL,
         asof=data.asof().date().isoformat(),
         markets=MARKETS,
         gauges=gauges,
@@ -326,6 +389,109 @@ def _render_one(env: Environment, data: DashboardData, lang: str, alt_href: str,
 #   en dashboard  -> en.html,                       archive -> briefs.en.html
 LANG_FILENAME = {"zh": "index.html", "en": "en.html"}
 ARCHIVE_FILENAME = {"zh": "briefs.html", "en": "briefs.en.html"}
+GLOSSARY_FILENAME = {"zh": "glossary.html", "en": "glossary.en.html"}
+
+
+def _build_glossary_markets(weights: WeightsConfig, lang: str) -> list[dict]:
+    """Flatten weights.yaml into the table shape the glossary template wants:
+    one block per market, each carrying its 3 sub-temp weights + a row per
+    indicator with (sub, weight-within-block, direction). Indicator names use
+    the friendly i18n alias when available."""
+    sub_keys = ("valuation", "sentiment", "liquidity")
+    out = []
+    for market in MARKETS:
+        meta = MARKET_META[market]
+        sub_w = weights.sub_weights.get(market, {})
+        if not sub_w:
+            continue
+        rows: list[dict] = []
+        for sub in sub_keys:
+            block = weights.indicator_weights.get(f"{market}_{sub}", {})
+            if not block:
+                continue
+            first = True
+            for indicator, spec in block.items():
+                rows.append(
+                    {
+                        "sub_label": t(sub, lang),
+                        "sub_weight": float(sub_w.get(sub, 0.0)),
+                        "is_first_in_block": first,
+                        "indicator": indicator,
+                        "indicator_plain": indicator_plain_name(indicator, lang),
+                        "weight": float(spec.get("weight", 0.0)),
+                        "direction": spec.get("direction", "+"),
+                    }
+                )
+                first = False
+        out.append(
+            {
+                "code": market,
+                "label": meta["label"],
+                "name_zh": meta["name_zh"],
+                "name_en": meta["name_en"],
+                "sub_weights": sub_w,
+                "indicator_rows": rows,
+            }
+        )
+    return out
+
+
+def _build_glossary_history_rows(history_stats: dict[str, dict], lang: str) -> list[dict]:
+    """Per market: today, all-time hot, all-time cold rows for the explainer
+    table. Event labels come from `historical_events.event_label`."""
+    rows: list[dict] = []
+    for market in MARKETS:
+        stats = history_stats.get(market)
+        if not stats:
+            continue
+        meta = MARKET_META[market]
+        market_label = f"{meta['label']} {meta['name_zh'] if lang == 'zh' else meta['name_en']}"
+        for kind in ("today", "hot", "cold"):
+            d = stats[f"{kind}_date"] if kind != "today" else stats["today_date"]
+            temp = stats[f"{kind}_temp"] if kind != "today" else stats["today_temp"]
+            rows.append(
+                {
+                    "market_label": market_label,
+                    "kind": kind,
+                    "date": d.isoformat(),
+                    "temperature": temp,
+                    "event": event_label(market, d, lang),
+                    "is_today": kind == "today",
+                    "history_pct": stats["today_pct"],
+                }
+            )
+    return rows
+
+
+def _render_glossary_pages(env: Environment, out_dir: Path, data: DashboardData, weights: WeightsConfig) -> list[Path]:
+    """Render the bilingual glossary explainer pages (glossary.html /
+    glossary.en.html). Each page is data-driven from weights.yaml + historical
+    extremes from temperature_daily, so it stays in sync with config."""
+    template = env.get_template("glossary.html.j2")
+    history_stats = _market_history_stats(data.temperature)
+    written: list[Path] = []
+    for lang in SUPPORTED:
+        alt_lang = next(other for other in SUPPORTED if other != lang)
+        # Match the dashboard's "default lang lives at index.html" convention.
+        if alt_lang == DEFAULT_LANG:
+            alt_lang_href = GLOSSARY_FILENAME[DEFAULT_LANG]
+        else:
+            alt_lang_href = GLOSSARY_FILENAME[alt_lang]
+        dashboard_href = "index.html" if lang == DEFAULT_LANG else LANG_FILENAME[lang]
+        html = template.render(
+            lang=lang,
+            tx=_i18n_namespace(lang),
+            alt_lang_href=alt_lang_href,
+            dashboard_href=dashboard_href,
+            repo_url=REPO_URL,
+            asof=data.asof().date().isoformat() if data.asof() is not None else "",
+            markets_meta=_build_glossary_markets(weights, lang),
+            history_rows=_build_glossary_history_rows(history_stats, lang),
+        )
+        target = out_dir / GLOSSARY_FILENAME[lang]
+        target.write_text(html, encoding="utf-8")
+        written.append(target)
+    return written
 
 
 def _render_brief_pages(env: Environment, out_dir: Path, briefs: list[BriefMeta]) -> list[Path]:
@@ -363,7 +529,7 @@ def _render_brief_pages(env: Environment, out_dir: Path, briefs: list[BriefMeta]
     return written
 
 
-def _render_archive_index(env: Environment, out_dir: Path, briefs: list[BriefMeta]) -> list[Path]:
+def _render_archive_index(env: Environment, out_dir: Path, briefs: list[BriefMeta], asof: str) -> list[Path]:
     """Render the bilingual /briefs.html (and /briefs.en.html) index page
     listing every brief on disk, newest first."""
     template = env.get_template("brief_archive.html.j2")
@@ -381,6 +547,8 @@ def _render_archive_index(env: Environment, out_dir: Path, briefs: list[BriefMet
             briefs=briefs,
             alt_lang_href=alt_href,
             dashboard_href=dashboard_href,
+            repo_url=REPO_URL,
+            asof=asof,
         )
         target = out_dir / ARCHIVE_FILENAME[lang]
         target.write_text(html, encoding="utf-8")
@@ -409,6 +577,8 @@ def render(out_dir: Path | str = "dist", data: DashboardData | None = None) -> l
     )
 
     briefs = list_briefs()
+    weights = WeightsConfig.load()
+    asof_str = data.asof().date().isoformat()
 
     written: list[Path] = []
     for lang in SUPPORTED:
@@ -426,10 +596,12 @@ def render(out_dir: Path | str = "dist", data: DashboardData | None = None) -> l
             alt_href = "index.html" if alt_lang == DEFAULT_LANG else LANG_FILENAME[alt_lang]
 
         archive_href = ARCHIVE_FILENAME[lang]
-        html = _render_one(env, data, lang, alt_href, archive_href)
+        glossary_href = GLOSSARY_FILENAME[lang]
+        html = _render_one(env, data, lang, alt_href, archive_href, glossary_href)
         target.write_text(html, encoding="utf-8")
         written.append(target)
 
+    written.extend(_render_glossary_pages(env, out_dir, data, weights))
     written.extend(_render_brief_pages(env, out_dir, briefs))
-    written.extend(_render_archive_index(env, out_dir, briefs))
+    written.extend(_render_archive_index(env, out_dir, briefs, asof_str))
     return written

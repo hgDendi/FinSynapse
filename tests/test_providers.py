@@ -6,7 +6,6 @@ so tests never hit the network and are deterministic.
 
 from __future__ import annotations
 
-import json
 from datetime import date
 from unittest.mock import MagicMock, patch
 
@@ -55,42 +54,36 @@ def _fred_df(start=date(2026, 4, 1), end=date(2026, 4, 4)):
         return provider.fetch(FetchRange(start=start, end=end))
 
 
-class TestFred:
-    def test_parses_observations_into_long_schema(self, tmp_data_dir, monkeypatch):
-        monkeypatch.setenv("FRED_API_KEY", "test-key")
-        from finsynapse import config as cfg
+@pytest.fixture
+def fred_env(tmp_data_dir, monkeypatch):
+    """Inject FRED_API_KEY and rebuild settings so the provider can run."""
+    monkeypatch.setenv("FRED_API_KEY", "test-key")
+    from finsynapse import config as cfg
 
-        cfg.settings = cfg.Settings()
+    monkeypatch.setattr(cfg, "settings", cfg.Settings())
+    return tmp_data_dir
+
+
+class TestFred:
+    def test_parses_observations_into_long_schema(self, fred_env):
         df = _fred_df()
         assert set(df.columns) == {"date", "indicator", "value", "source_symbol"}
         assert len(df) > 0
         assert df["value"].notna().all()
 
-    def test_skips_missing_dot_values(self, tmp_data_dir, monkeypatch):
-        monkeypatch.setenv("FRED_API_KEY", "test-key")
-        from finsynapse import config as cfg
-
-        cfg.settings = cfg.Settings()
+    def test_skips_missing_dot_values(self, fred_env):
         df = _fred_df()
         dates = {str(d) for d in df["date"]}
         assert "2026-04-03" not in dates
 
-    def test_empty_response_raises(self, tmp_data_dir, monkeypatch):
-        monkeypatch.setenv("FRED_API_KEY", "test-key")
-        from finsynapse import config as cfg
-
-        cfg.settings = cfg.Settings()
+    def test_empty_response_raises(self, fred_env):
         with patch("finsynapse.providers.fred.requests_session") as mock_session:
             mock_session.return_value.get.return_value = _mock_response(json_data={"observations": []})
             provider = FredProvider()
             with pytest.raises(RuntimeError):
                 provider.fetch(FetchRange(start=date(2026, 4, 1), end=date(2026, 4, 1)))
 
-    def test_bronze_write_idempotent(self, tmp_data_dir, monkeypatch):
-        monkeypatch.setenv("FRED_API_KEY", "test-key")
-        from finsynapse import config as cfg
-
-        cfg.settings = cfg.Settings()
+    def test_bronze_write_idempotent(self, fred_env):
         df = _fred_df()
         provider = FredProvider()
         p1 = provider.write_bronze(df, date(2026, 4, 4))
@@ -259,38 +252,11 @@ class TestRetry:
         s2 = requests_session()
         assert s1 is s2
 
-    def test_with_backoff_retries_on_exception(self):
-        import requests as r
+    def test_session_only_retries_idempotent_methods(self):
+        from finsynapse.providers.retry import requests_session
 
-        from finsynapse.providers.retry import with_backoff
-
-        call_count = 0
-
-        @with_backoff(max_retries=2, base_delay=0.0)
-        def flaky():
-            nonlocal call_count
-            call_count += 1
-            raise r.exceptions.ConnectionError("transient")
-
-        with pytest.raises(r.exceptions.ConnectionError):
-            flaky()
-        assert call_count == 3  # initial + 2 retries
-
-    def test_with_backoff_returns_on_success(self):
-        from finsynapse.providers.retry import with_backoff
-
-        call_count = 0
-
-        @with_backoff(max_retries=3, base_delay=0.0)
-        def flaky():
-            nonlocal call_count
-            call_count += 1
-            if call_count < 3:
-                import requests as r
-
-                raise r.exceptions.ConnectionError("transient")
-            return "success"
-
-        result = flaky()
-        assert result == "success"
-        assert call_count == 3
+        session = requests_session()
+        adapter = session.get_adapter("https://example.com")
+        allowed = adapter.max_retries.allowed_methods
+        assert "GET" in allowed
+        assert "POST" not in allowed

@@ -71,7 +71,7 @@ class FredProvider(Provider):
             "observation_start": fetch_range.start.isoformat(),
             "observation_end": fetch_range.end.isoformat(),
         }
-        r = requests_session().get(API_BASE, params=params, timeout=(5, 30))
+        r = requests_session().get(API_BASE, params=params, timeout=(10, 30))
         r.raise_for_status()
         payload = r.json()
         observations = payload.get("observations", [])

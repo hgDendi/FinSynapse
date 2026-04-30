@@ -60,7 +60,7 @@ class TreasuryRealYieldProvider(Provider):
     def _fetch_year(self, year: int) -> pd.DataFrame:
         url = BASE.format(year=year)
         params = {**PARAMS, "field_tdr_date_value": str(year)}
-        r = requests_session().get(url, params=params, headers=UA, timeout=(5, 30))
+        r = requests_session().get(url, params=params, headers=UA, timeout=(10, 30))
         r.raise_for_status()
         raw = pd.read_csv(io.StringIO(r.text))
         if raw.empty or "Date" not in raw.columns:

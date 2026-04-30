@@ -47,7 +47,7 @@ class MultplProvider(Provider):
 
     def _fetch_one(self, table: MultplTable) -> pd.DataFrame:
         url = f"{BASE}/{table.slug}/table/by-month"
-        r = requests_session().get(url, headers=UA, timeout=(5, 30))
+        r = requests_session().get(url, headers=UA, timeout=(10, 20))
         r.raise_for_status()
         soup = BeautifulSoup(r.text, "lxml")
         html_table = soup.find("table", {"id": "datatable"}) or soup.find("table")

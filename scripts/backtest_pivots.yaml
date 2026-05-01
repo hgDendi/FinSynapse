@@ -24,11 +24,11 @@ pivots:
     index: sp500
     confirmed_by: ["vix_spike", "credit_spread_widening"]
 
-  - label: "2015–16 China-growth-scare / RMB devaluation low"
+  - label: "2015–16 China-growth-scare correction (US was not cold — PE still elevated)"
     market: us
     date: "2016-02-11"
-    expected_zone: cold
-    source: "China devaluation panic, S&P -14% from Jul 2015 high"
+    expected_zone: mid
+    source: "China devaluation panic, S&P -14% from Jul 2015 high but valuation still elevated (PE>20)"
     index: sp500
     confirmed_by: ["vix_spike", "oil_crash"]
 
@@ -72,13 +72,13 @@ pivots:
     index: sp500
     confirmed_by: ["hy_oas_widening"]
 
-  - label: "2024 pre-9.24 A-share stimulus (US side)"
+  - label: "2024 pre-9.24 US near ATH (US was hot — S&P ATH, CAPE>35)"
     market: us
     date: "2024-09-23"
-    expected_zone: mid
-    source: "US itself was mid-temp at this date; CN stimulus came 2024-09-24"
+    expected_zone: hot
+    source: "US at ATH with CAPE>35; CN stimulus came 2024-09-24, not a US cold pivot"
     index: sp500
-    confirmed_by: []
+    confirmed_by: ["cape_extreme"]
 
   - label: "AI-led valuation new highs"
     market: us

@@ -182,7 +182,7 @@ def main() -> None:
     st.divider()
 
     # --- External anchor (CNN F&G) ---
-    ext = report.external_anchor if hasattr(report, "external_anchor") else None
+    ext = report.external_anchor
     if ext is not None and isinstance(ext, dict):
         st.subheader(t("val_anchor_section", lang))
         st.caption(ext.get("source", ""))
@@ -204,7 +204,7 @@ def main() -> None:
             )
 
     # Bootstrap CI summary
-    bs = report.bootstrap_ci if hasattr(report, "bootstrap_ci") else None
+    bs = report.bootstrap_ci
     if bs is not None and isinstance(bs, dict):
         with st.expander(t("val_bootstrap_ci", lang), expanded=False):
             for mkt, ci in bs.items():

@@ -81,6 +81,8 @@ class ValidationReport:
     zone_distribution: dict = field(default_factory=dict)
     spearman_rho: dict = field(default_factory=dict)
     gate: GateResult | None = None
+    external_anchor: dict | None = None
+    bootstrap_ci: dict | None = None
 
     @property
     def gate_passed(self) -> bool:
@@ -137,4 +139,6 @@ def load_report(path: Path | None = None) -> ValidationReport | None:
         zone_distribution=raw.get("zone_distribution", {}),
         spearman_rho=raw.get("spearman_rho", {}),
         gate=_parse_gate(raw["gate"]) if "gate" in raw else None,
+        external_anchor=raw.get("external_anchor"),
+        bootstrap_ci=raw.get("bootstrap_ci"),
     )

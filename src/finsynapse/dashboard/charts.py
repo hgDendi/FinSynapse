@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from finsynapse.dashboard.i18n import DEFAULT_LANG, t
+from finsynapse.dashboard.i18n import DEFAULT_LANG, t, translate_div
 
 # Shared palette aligned with the redesigned UI (Stitch reference).
 #   navy  — cold / valuation / CN accent
@@ -397,6 +397,54 @@ def divergence_recent(div_df: pd.DataFrame, n: int = 15, lang: str = DEFAULT_LAN
         fig = go.Figure()
         fig.add_annotation(text=t("no_divergence", lang), x=0.5, y=0.5, showarrow=False, font=dict(size=14))
         fig.update_layout(height=240, paper_bgcolor=COLOR_BG, font=dict(family=FONT_FAMILY))
+        return fig
+
+    df = div_df[div_df["is_divergent"]].copy()
+    if df.empty:
+        fig = go.Figure()
+        fig.add_annotation(text=t("no_divergence", lang), x=0.5, y=0.5, showarrow=False, font=dict(size=14))
+        fig.update_layout(height=240, paper_bgcolor=COLOR_BG, font=dict(family=FONT_FAMILY))
+        return fig
+
+    df["date"] = pd.to_datetime(df["date"])
+    cutoff = df["date"].max() - pd.Timedelta(days=90)
+    df = df[df["date"] >= cutoff].nlargest(n * 4, "strength")
+    df["description_localized"] = df["description"].map(lambda d: translate_div(d, lang))
+
+    fig = go.Figure()
+    palette = {
+        "sp500_vix": COLOR_HOT,
+        "us10y_dxy": "#F59E0B",
+        "gold_real_rate": COLOR_MID,
+        "sp500_us10y": COLOR_VALUATION,
+        "hsi_dxy": COLOR_LIQUIDITY,
+        "csi300_volume": "#06B6D4",
+        "hsi_southbound": "#EC4899",
+    }
+    for pair, group in df.groupby("pair_name"):
+        fig.add_trace(
+            go.Scatter(
+                x=group["date"],
+                y=group["strength"],
+                mode="markers",
+                name=pair,
+                marker=dict(size=8, color=palette.get(pair, "#6B7280"), line=dict(width=0.5, color="#374151")),
+                hovertemplate=("%{x|%Y-%m-%d}<br>" + pair + "<br>strength=%{y:.4f}<br>%{customdata}<extra></extra>"),
+                customdata=group["description_localized"],
+            )
+        )
+
+    fig.update_layout(
+        title=dict(text=f"<b>{t('chart_recent_div', lang)}</b>", font=dict(size=13, color="#1c1b1b")),
+        height=280,
+        margin=dict(t=44, b=30, l=50, r=20),
+        paper_bgcolor=COLOR_BG,
+        plot_bgcolor=COLOR_PLOT_BG,
+        xaxis=dict(title=None, gridcolor="rgba(0,0,0,0.04)", linecolor="rgba(0,0,0,0.08)"),
+        yaxis=dict(title=t("th_strength", lang), gridcolor="rgba(0,0,0,0.06)", linecolor="rgba(0,0,0,0.08)"),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+        font=dict(family=FONT_FAMILY, color="#1c1b1b"),
+    )
     return fig
 
 

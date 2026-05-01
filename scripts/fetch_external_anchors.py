@@ -17,7 +17,6 @@ Output:
 from __future__ import annotations
 
 import json
-import ssl
 import sys
 import urllib.request
 from datetime import UTC, datetime
@@ -40,13 +39,11 @@ def _epoch_to_date(epoch_ms: float) -> str:
 
 def fetch_cnn_fear_greed(output_path: Path | None = None) -> Path:
     """Fetch CNN F&G data and write to CSV. Returns output path."""
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-
     req = urllib.request.Request(CNN_URL, headers=HEADERS)
-    r = urllib.request.urlopen(req, timeout=15, context=ctx)
-    data = json.loads(r.read())
+    with urllib.request.urlopen(req, timeout=15) as r:
+        if r.status != 200:
+            raise RuntimeError(f"CNN F&G fetch failed: HTTP {r.status}")
+        data = json.loads(r.read())
 
     historical = data.get("fear_and_greed_historical", {})
     entries = historical.get("data", [])

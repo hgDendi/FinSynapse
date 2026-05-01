@@ -225,13 +225,17 @@ def _compute_forward_returns(macro_long: pd.DataFrame, temp_df: pd.DataFrame) ->
                 continue
             current = prices.loc[t]
             fwd: dict[str, float | None] = {}
+            t_pos = prices.index.get_loc(t)
+            n_prices = len(prices.index)
             for label, days in FORWARD_HORIZONS.items():
-                # find nearest business day ≥ t + days
-                future_idx = prices.index[prices.index >= t + pd.Timedelta(days=days)]
-                if len(future_idx) == 0:
+                # FORWARD_HORIZONS values are TRADING-day counts (21/63/126/252).
+                # Use positional offset on the trading-day index so 6m == ~126 trading days,
+                # not 126 calendar days (~4.2 months).
+                fwd_pos = t_pos + days
+                if fwd_pos >= n_prices:
                     fwd[f"return_{label}"] = None
                     continue
-                fwd_price = prices.loc[future_idx[0]]
+                fwd_price = prices.iloc[fwd_pos]
                 fwd[f"return_{label}"] = float(fwd_price / current - 1.0)
             rows.append(
                 ForwardReturnRow(
@@ -323,8 +327,24 @@ def _hit_rate_table(pivot_results: list[PivotResult]) -> dict:
     return table
 
 
-def _gate_check(hit_table: dict, forward_rows: list[ForwardReturnRow], temp_df: pd.DataFrame) -> dict:
-    """Apply the Phase 1 gate: multi-factor must beat PE in ≥2/3 markets."""
+def _gate_check(
+    hit_table: dict,
+    mf_forward_rows: list[ForwardReturnRow],
+    pe_forward_rows: list[ForwardReturnRow],
+) -> dict:
+    """Apply the Phase 1 gate (per module docstring):
+
+    A market is *beaten* iff multi-factor wins on BOTH:
+      (a) directional_rate(MF) >= directional_rate(PE)            [hit-rate]
+      (b) |ρ(MF, 3m forward)|  >= |ρ(PE, 3m forward)|             [predictive ρ]
+
+    Gate passes when ≥ 2/3 markets are beaten.
+
+    The ρ component requires SCIPY_AVAILABLE; if not, ρ is treated as a tie
+    (mf_rho_win=True) so behavior degrades to hit-rate-only. The overall
+    `passed` flag still reflects the docstring contract whenever scipy is
+    present in CI.
+    """
     mf = hit_table.get("multi-factor", {})
     pe = hit_table.get("PE single-factor", {})
     markets_beaten = 0
@@ -333,23 +353,42 @@ def _gate_check(hit_table: dict, forward_rows: list[ForwardReturnRow], temp_df: 
         mf_rate = mf.get(market, {}).get("directional_rate", 0)
         pe_rate = pe.get(market, {}).get("directional_rate", 0)
 
-        detail = {
-            "mf_directional_rate": mf_rate,
-            "pe_directional_rate": pe_rate,
-            "mf_directional_win": mf_rate >= pe_rate,
-        }
-        beaten = mf_rate >= pe_rate
+        mf_rho_3m = _spearman_rho(mf_forward_rows, market, "3m") if mf_forward_rows else None
+        pe_rho_3m = _spearman_rho(pe_forward_rows, market, "3m") if pe_forward_rows else None
+
+        # Tie when ρ is unavailable for either side (degenerate sample, scipy missing).
+        if mf_rho_3m is None or pe_rho_3m is None:
+            rho_win = True
+            rho_unavailable = True
+        else:
+            rho_win = abs(mf_rho_3m) >= abs(pe_rho_3m)
+            rho_unavailable = False
+
+        hit_win = mf_rate >= pe_rate
+        beaten = hit_win and rho_win
         if beaten:
             markets_beaten += 1
-        detail["beaten"] = beaten
-        market_details[market] = detail
+
+        market_details[market] = {
+            "mf_directional_rate": mf_rate,
+            "pe_directional_rate": pe_rate,
+            "mf_directional_win": hit_win,
+            "mf_rho_3m": round(mf_rho_3m, 4) if mf_rho_3m is not None else None,
+            "pe_rho_3m": round(pe_rho_3m, 4) if pe_rho_3m is not None else None,
+            "mf_rho_win": rho_win,
+            "rho_unavailable": rho_unavailable,
+            "beaten": beaten,
+        }
 
     passed = markets_beaten >= 2
     return {
         "passed": passed,
         "markets_beaten": markets_beaten,
         "total_markets": 3,
-        "standard": "Multi-factor directional hit rate ≥ PE single-factor in ≥2/3 markets",
+        "standard": (
+            "Multi-factor wins ≥ 2/3 markets on BOTH directional hit rate (≥ PE) "
+            "AND |Spearman ρ|(temp → 3m forward) (≥ PE)."
+        ),
         "details": market_details,
     }
 
@@ -764,7 +803,9 @@ def main() -> int:
     print()
     print("[forward] computing forward returns...")
     forward_rows = _compute_forward_returns(macro, temp)
-    print(f"  {len(forward_rows):,} forward-return rows computed")
+    print(f"  {len(forward_rows):,} forward-return rows computed (multi-factor)")
+    pe_forward_rows = _compute_forward_returns(macro, pe_temp) if not pe_temp.empty else []
+    print(f"  {len(pe_forward_rows):,} forward-return rows computed (PE single-factor)")
 
     # --- Zone distribution ---
     zone_dist = _zone_distribution(forward_rows)
@@ -776,7 +817,7 @@ def main() -> int:
     fwd_stats = _compute_market_forward_stats(forward_rows)
 
     # --- Gate ---
-    gate = _gate_check(hit_table, forward_rows, temp)
+    gate = _gate_check(hit_table, forward_rows, pe_forward_rows)
     print(f"  gate status: {'PASSED' if gate['passed'] else 'FAILED'}")
 
     # --- Champion baseline comparison ---

@@ -19,7 +19,7 @@
 
 # How the three sub-temperatures combine into the overall (per market).
 sub_weights:
-  cn: { valuation: 0.5, sentiment: 0.3, liquidity: 0.2 }
+  cn: { valuation: 0.65, sentiment: 0.20, liquidity: 0.15 }
   hk: { valuation: 0.6, sentiment: 0.25, liquidity: 0.15 }
   us: { valuation: 0.4, sentiment: 0.35, liquidity: 0.25 }  # US estimated CAPE+PE so val weight slightly lower
 

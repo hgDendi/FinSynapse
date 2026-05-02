@@ -341,9 +341,7 @@ def _render_one(
     time_series_by_market: dict[str, str] = {}
     for market in MARKETS:
         if (data.temperature["market"] == market).any():
-            time_series_by_market[market] = _fig_to_json(
-                charts.time_series(data.temperature, market, lang)
-            )
+            time_series_by_market[market] = _fig_to_json(charts.time_series(data.temperature, market, lang))
     if history_market not in time_series_by_market and time_series_by_market:
         history_market = next(iter(time_series_by_market))
     divergence_json = _fig_to_json(charts.divergence_recent(data.divergence, lang=lang))

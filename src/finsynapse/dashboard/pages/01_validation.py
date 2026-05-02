@@ -153,9 +153,7 @@ def main() -> None:
             )
         corr = ext.get("correlation")
         if corr:
-            st.caption(
-                f"Spearman ρ = {corr['spearman_rho']:+.3f} (p={corr['p_value']:.6f}, n={corr['n']})"
-            )
+            st.caption(f"Spearman ρ = {corr['spearman_rho']:+.3f} (p={corr['p_value']:.6f}, n={corr['n']})")
 
     # Bootstrap CI summary
     bs = report.bootstrap_ci

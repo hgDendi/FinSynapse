@@ -652,16 +652,24 @@ class TestGateChecksRho:
             for i in range(50):
                 mf_rows.append(
                     rv.ForwardReturnRow(
-                        date=date(2020, 1, 1), market=market,
-                        temperature=float(mf_temps[i]), return_1m=None,
-                        return_3m=float(mf_returns_3m[i]), return_6m=None, return_12m=None,
+                        date=date(2020, 1, 1),
+                        market=market,
+                        temperature=float(mf_temps[i]),
+                        return_1m=None,
+                        return_3m=float(mf_returns_3m[i]),
+                        return_6m=None,
+                        return_12m=None,
                     )
                 )
                 pe_rows.append(
                     rv.ForwardReturnRow(
-                        date=date(2020, 1, 1), market=market,
-                        temperature=float(pe_temps[i]), return_1m=None,
-                        return_3m=float(pe_returns_3m[i]), return_6m=None, return_12m=None,
+                        date=date(2020, 1, 1),
+                        market=market,
+                        temperature=float(pe_temps[i]),
+                        return_1m=None,
+                        return_3m=float(pe_returns_3m[i]),
+                        return_6m=None,
+                        return_12m=None,
                     )
                 )
 
@@ -698,16 +706,24 @@ class TestGateChecksRho:
             for i in range(50):
                 mf_rows.append(
                     rv.ForwardReturnRow(
-                        date=date(2020, 1, 1), market=market,
-                        temperature=float(mf_temps[i]), return_1m=None,
-                        return_3m=float(mf_returns_3m[i]), return_6m=None, return_12m=None,
+                        date=date(2020, 1, 1),
+                        market=market,
+                        temperature=float(mf_temps[i]),
+                        return_1m=None,
+                        return_3m=float(mf_returns_3m[i]),
+                        return_6m=None,
+                        return_12m=None,
                     )
                 )
                 pe_rows.append(
                     rv.ForwardReturnRow(
-                        date=date(2020, 1, 1), market=market,
-                        temperature=float(pe_temps[i]), return_1m=None,
-                        return_3m=float(pe_returns_3m[i]), return_6m=None, return_12m=None,
+                        date=date(2020, 1, 1),
+                        market=market,
+                        temperature=float(pe_temps[i]),
+                        return_1m=None,
+                        return_3m=float(pe_returns_3m[i]),
+                        return_6m=None,
+                        return_12m=None,
                     )
                 )
 

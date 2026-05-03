@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="utf-8">
+<title>FinSynapse · Thermometer guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #FAF9FE; --ink: #1c1b1b; --ink-soft: #46464a; --ink-muted: #77767b; }
+  body {
+    background-color: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    color: var(--ink);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .glass { background: rgba(255,255,255,0.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.55); box-shadow: 0 18px 40px rgba(0,0,0,0.04); }
+  .glass-strong { background: rgba(255,255,255,0.7); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.6); }
+  code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 0.85em; padding: 1px 6px; border-radius: 4px; background: rgba(0,0,0,0.05); }
+  .accent-navy { color:#1E3A8A; }
+  .accent-coral { color:#B91C1C; }
+  .accent-gold { color:#B45309; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(30,58,138,0.10); color:#1E3A8A; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  table.gloss-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  table.gloss-table th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted); padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  table.gloss-table td { padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 14px; vertical-align: top; }
+  table.gloss-table tr:last-child td { border-bottom: 0; }
+  .anchor-target { scroll-margin-top: 80px; }
+</style>
+
+
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "wjndzfxjqa");
+  clarity("set", "page_type", "glossary");
+  clarity("set", "lang", "en");
+</script>
+
+</head>
+<body class="min-h-screen pb-20">
+
+<nav class="sticky top-0 z-40 glass-strong border-b border-white/40">
+  <div class="max-w-[960px] mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-xl">🌡️</span>
+      <span class="text-lg font-extrabold tracking-tight">FinSynapse</span>
+      <span class="hidden sm:inline-block text-xs uppercase tracking-widest text-[color:var(--ink-muted)] ml-2">Thermometer guide</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="en.html" class="px-3 py-1.5 rounded-full text-sm font-medium hover:bg-white/60 transition" style="color: var(--ink-soft);">← Back to dashboard</a>
+      <a href="glossary.html" title="Switch language" class="px-3 py-1.5 rounded-full text-sm font-semibold bg-white/60 hover:bg-white border border-white/60 transition">中文</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-[960px] mx-auto px-6 mt-12 space-y-12">
+
+  <!-- Hero / intro -->
+  <header>
+    <h1 class="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
+      <span class="text-3xl">🌡️</span>
+      What the market thermometer is
+    </h1>
+    <p class="mt-3 text-base leading-relaxed" style="color: var(--ink-soft);">
+      We collapse <b>valuation</b>, <b>sentiment</b>, and <b>liquidity</b> indicators onto a single 0–100 relative scale. 0 = the coldest the market has ever been within its lookback; 100 = the hottest ever. Recomputed every day at 22:00 UTC by GitHub Actions; all numbers come from the silver layer and are reproducible from git history.
+    </p>
+  </header>
+
+  <!-- Step-by-step pipeline -->
+  <section id="how-it-works" class="anchor-target space-y-5">
+    
+    <div class="glass rounded-2xl p-5 flex gap-4">
+      <span class="step-num">1</span>
+      <div>
+        <h3 class="text-base font-bold mb-1">Step 1: convert each indicator to its historical percentile</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--ink-soft);">Each indicator (CAPE, VIX, social financing, DXY …) is converted to its trailing <b>10-year</b> rolling percentile. Monthly series (CAPE, M2, social financing) are forward-filled to daily first so the window has enough data points.</p>
+      </div>
+    </div>
+    
+    <div class="glass rounded-2xl p-5 flex gap-4">
+      <span class="step-num">2</span>
+      <div>
+        <h3 class="text-base font-bold mb-1">Step 2: direction determines hot or cold</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--ink-soft);">Each indicator carries a direction in weights.yaml: <code>+</code> means high percentile → high temperature (e.g. high CAPE = expensive = hot); <code>-</code> means high percentile → low temperature (e.g. high VIX = fear = cold; strong DXY = tight global liquidity = cold).</p>
+      </div>
+    </div>
+    
+    <div class="glass rounded-2xl p-5 flex gap-4">
+      <span class="step-num">3</span>
+      <div>
+        <h3 class="text-base font-bold mb-1">Step 3: combine into sub-temperatures</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--ink-soft);">Within each sub-temperature (valuation / sentiment / liquidity) we take a weighted average across the available indicators. <b>Missing indicators auto-renormalise</b> — e.g. when HK options PCR has no free source, HK sentiment falls back to 100% on southbound 5d instead of going blank.</p>
+      </div>
+    </div>
+    
+    <div class="glass rounded-2xl p-5 flex gap-4">
+      <span class="step-num">4</span>
+      <div>
+        <h3 class="text-base font-bold mb-1">Step 4: combine into overall temperature</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--ink-soft);">The three sub-temperatures are combined per-market into the <b>overall temperature</b> (0–100). Bands: <b>&lt; 30 Cold</b> · <b>30–70 Neutral</b> · <b>≥ 70 Hot</b>.</p>
+      </div>
+    </div>
+    
+  </section>
+
+  <!-- Compact formula card -->
+  <section id="formula" class="anchor-target">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-navy">function</span>
+      Formula at a glance
+    </h2>
+    <div class="glass-strong rounded-2xl p-6 font-mono text-sm leading-relaxed overflow-x-auto" style="color: var(--ink);">
+      <div>indicator_pct = rolling_percentile(value, window=10y)</div>
+      <div>contribution = (direction == '+') ? indicator_pct : (100 − indicator_pct)</div>
+      <div>sub_temp     = Σ (contribution<sub>i</sub> × indicator_weight<sub>i</sub>) / Σ available_weight<sub>i</sub></div>
+      <div>overall      = val × w<sub>val</sub> + sent × w<sub>sent</sub> + liq × w<sub>liq</sub></div>
+      <div class="mt-3 text-[color:var(--ink-muted)] not-italic">// 0 ≤ overall ≤ 100 &nbsp;·&nbsp; &lt; 30 cold · 30–70 mid · ≥ 70 hot</div>
+    </div>
+  </section>
+
+  <!-- Per-market weights tables (data-driven from weights.yaml) -->
+  <section id="weights" class="anchor-target">
+    <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-navy">tune</span>
+      Per-market weights
+    </h2>
+    <p class="text-sm mb-5 leading-relaxed" style="color: var(--ink-soft);">Loaded live from <code>config/weights.yaml</code> — edit and rerun <code>finsynapse transform run --layer temperature</code> to apply.</p>
+
+    <div class="space-y-6">
+      
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-white/40">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🇨🇳 CN</span>
+            <div>
+              <div class="font-semibold">China A-share</div>
+              <div class="text-xs" style="color: var(--ink-muted);">CN</div>
+            </div>
+          </div>
+          <div class="text-xs" style="color: var(--ink-muted);">
+            valuation 65%
+            · sentiment 20%
+            · liquidity 15%
+          </div>
+        </div>
+        <table class="gloss-table">
+          <thead>
+            <tr>
+              <th>Sub-temperature</th>
+              <th>Weight</th>
+              <th>Indicator</th>
+              <th>Ind. weight</th>
+              <th>Direction</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr>
+              <td><span class="font-semibold">Valuation</span></td>
+              <td class="tabular-nums">65%</td>
+              <td><div>CSI 300 trailing P/E</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>csi300_pe_ttm</code></div></td>
+              <td class="tabular-nums">50%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>CSI 300 P/B</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>csi300_pb</code></div></td>
+              <td class="tabular-nums">50%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td><span class="font-semibold">Sentiment</span></td>
+              <td class="tabular-nums">20%</td>
+              <td><div>cn_north_5d</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_north_5d</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>A-share 5-day turnover</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_a_turnover_5d</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>cn_margin_balance</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_margin_balance</code></div></td>
+              <td class="tabular-nums">35%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>cn_usdcny_pressure</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_usdcny_pressure</code></div></td>
+              <td class="tabular-nums">15%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td><span class="font-semibold">Liquidity</span></td>
+              <td class="tabular-nums">15%</td>
+              <td><div>cn_m2_yoy</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_m2_yoy</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>CN social financing (12M)</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_social_financing_12m</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>cn_credit_impulse</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_credit_impulse</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>cn_dr007</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_dr007</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-white/40">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🇭🇰 HK</span>
+            <div>
+              <div class="font-semibold">Hong Kong</div>
+              <div class="text-xs" style="color: var(--ink-muted);">HK</div>
+            </div>
+          </div>
+          <div class="text-xs" style="color: var(--ink-muted);">
+            valuation 60%
+            · sentiment 25%
+            · liquidity 15%
+          </div>
+        </div>
+        <table class="gloss-table">
+          <thead>
+            <tr>
+              <th>Sub-temperature</th>
+              <th>Weight</th>
+              <th>Indicator</th>
+              <th>Ind. weight</th>
+              <th>Direction</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr>
+              <td><span class="font-semibold">Valuation</span></td>
+              <td class="tabular-nums">60%</td>
+              <td><div>HK ETF TTM dividend yield</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>hk_ewh_yield_ttm</code></div></td>
+              <td class="tabular-nums">100%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td><span class="font-semibold">Sentiment</span></td>
+              <td class="tabular-nums">25%</td>
+              <td><div>Southbound flow (5D)</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>cn_south_5d</code></div></td>
+              <td class="tabular-nums">60%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>hk_vhsi</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>hk_vhsi</code></div></td>
+              <td class="tabular-nums">40%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td><span class="font-semibold">Liquidity</span></td>
+              <td class="tabular-nums">15%</td>
+              <td><div>us10y_real_yield</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us10y_real_yield</code></div></td>
+              <td class="tabular-nums">30%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>DXY</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>dxy</code></div></td>
+              <td class="tabular-nums">20%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>hk_hibor_1m</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>hk_hibor_1m</code></div></td>
+              <td class="tabular-nums">50%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-white/40">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🇺🇸 US</span>
+            <div>
+              <div class="font-semibold">United States</div>
+              <div class="text-xs" style="color: var(--ink-muted);">US</div>
+            </div>
+          </div>
+          <div class="text-xs" style="color: var(--ink-muted);">
+            valuation 35%
+            · sentiment 45%
+            · liquidity 20%
+          </div>
+        </div>
+        <table class="gloss-table">
+          <thead>
+            <tr>
+              <th>Sub-temperature</th>
+              <th>Weight</th>
+              <th>Indicator</th>
+              <th>Ind. weight</th>
+              <th>Direction</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr>
+              <td><span class="font-semibold">Valuation</span></td>
+              <td class="tabular-nums">35%</td>
+              <td><div>US trailing P/E</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us_pe_ttm</code></div></td>
+              <td class="tabular-nums">35%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>US CAPE (Shiller P/E)</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us_cape</code></div></td>
+              <td class="tabular-nums">35%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>us_erp</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us_erp</code></div></td>
+              <td class="tabular-nums">30%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td><span class="font-semibold">Sentiment</span></td>
+              <td class="tabular-nums">45%</td>
+              <td><div>VIX</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>vix</code></div></td>
+              <td class="tabular-nums">40%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>us_hy_oas</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us_hy_oas</code></div></td>
+              <td class="tabular-nums">35%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>us_umich_sentiment</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us_umich_sentiment</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+            <tr>
+              <td><span class="font-semibold">Liquidity</span></td>
+              <td class="tabular-nums">20%</td>
+              <td><div>us10y_real_yield</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us10y_real_yield</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>DXY</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>dxy</code></div></td>
+              <td class="tabular-nums">15%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>us_nfci</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us_nfci</code></div></td>
+              <td class="tabular-nums">35%</td>
+              <td class="text-xs">− high pct → cold</td>
+            </tr>
+            
+            <tr>
+              <td></td>
+              <td class="tabular-nums"></td>
+              <td><div>us_walcl</div><div class="text-xs mt-0.5" style="color: var(--ink-muted);"><code>us_walcl</code></div></td>
+              <td class="tabular-nums">25%</td>
+              <td class="text-xs">+ high pct → hot</td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+      
+    </div>
+  </section>
+
+  <!-- Historical extremes section (the hover target from market cards) -->
+  <section id="historical-extremes" class="anchor-target">
+    <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-coral">history</span>
+      Historical extremes & matched events
+    </h2>
+    <p class="text-sm mb-3 leading-relaxed" style="color: var(--ink-soft);">Below are the all-time hottest and coldest readings for each market's overall temperature, matched to the dominant macro event around that date. Today's "historical percentile" is where the current reading sits on this timeline.</p>
+    <p class="text-xs mb-5 leading-relaxed" style="color: var(--ink-muted);">"Historical percentile" = where today's overall temperature ranks against every trading day since data started. 99% means hotter than 99% of historical days.</p>
+
+    <div class="glass rounded-2xl overflow-hidden">
+      <table class="gloss-table">
+        <thead>
+          <tr>
+            <th>Market</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Temp</th>
+            <th>Matched event</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr class="bg-white/40">
+            <td><span class="font-semibold">🇨🇳 CN China A-share</span></td>
+            <td class="text-sm">
+              <span class="accent-gold font-medium">📍 Today</span>
+            </td>
+            <td class="tabular-nums text-sm">2026-05-01</td>
+            <td class="tabular-nums font-semibold">73° <span class="text-xs font-normal" style="color: var(--ink-muted);">(P79)</span></td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr >
+            <td><span class="font-semibold">🇨🇳 CN China A-share</span></td>
+            <td class="text-sm">
+              <span class="accent-coral font-medium">🔥 All-time hot</span>
+              
+            </td>
+            <td class="tabular-nums text-sm">2026-02-14</td>
+            <td class="tabular-nums font-semibold">100°</td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr >
+            <td><span class="font-semibold">🇨🇳 CN China A-share</span></td>
+            <td class="text-sm">
+              <span class="accent-navy font-medium">🧊 All-time cold</span>
+              
+            </td>
+            <td class="tabular-nums text-sm">2019-10-01</td>
+            <td class="tabular-nums font-semibold">1°</td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr class="bg-white/40">
+            <td><span class="font-semibold">🇭🇰 HK Hong Kong</span></td>
+            <td class="text-sm">
+              <span class="accent-gold font-medium">📍 Today</span>
+            </td>
+            <td class="tabular-nums text-sm">2026-05-01</td>
+            <td class="tabular-nums font-semibold">11° <span class="text-xs font-normal" style="color: var(--ink-muted);">(P13)</span></td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr >
+            <td><span class="font-semibold">🇭🇰 HK Hong Kong</span></td>
+            <td class="text-sm">
+              <span class="accent-coral font-medium">🔥 All-time hot</span>
+              
+            </td>
+            <td class="tabular-nums text-sm">2016-09-05</td>
+            <td class="tabular-nums font-semibold">98°</td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr >
+            <td><span class="font-semibold">🇭🇰 HK Hong Kong</span></td>
+            <td class="text-sm">
+              <span class="accent-navy font-medium">🧊 All-time cold</span>
+              
+            </td>
+            <td class="tabular-nums text-sm">2012-07-11</td>
+            <td class="tabular-nums font-semibold">0°</td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr class="bg-white/40">
+            <td><span class="font-semibold">🇺🇸 US United States</span></td>
+            <td class="text-sm">
+              <span class="accent-gold font-medium">📍 Today</span>
+            </td>
+            <td class="tabular-nums text-sm">2026-05-01</td>
+            <td class="tabular-nums font-semibold">97° <span class="text-xs font-normal" style="color: var(--ink-muted);">(P97)</span></td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr >
+            <td><span class="font-semibold">🇺🇸 US United States</span></td>
+            <td class="text-sm">
+              <span class="accent-coral font-medium">🔥 All-time hot</span>
+              
+            </td>
+            <td class="tabular-nums text-sm">2013-03-14</td>
+            <td class="tabular-nums font-semibold">100°</td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              <span style="color: var(--ink-muted);">(no labelled event in window)</span>
+            </td>
+          </tr>
+          
+          <tr >
+            <td><span class="font-semibold">🇺🇸 US United States</span></td>
+            <td class="text-sm">
+              <span class="accent-navy font-medium">🧊 All-time cold</span>
+              
+            </td>
+            <td class="tabular-nums text-sm">2022-01-17</td>
+            <td class="tabular-nums font-semibold">0°</td>
+            <td class="text-sm" style="color: var(--ink-soft);">
+              2022 Fed aggressive hiking cycle
+            </td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Caveats -->
+  <section id="caveats" class="anchor-target">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined accent-gold">info</span>
+      A few things worth knowing
+    </h2>
+    <div class="glass rounded-2xl p-6 text-sm leading-relaxed" style="color: var(--ink-soft);">
+      <ul class="list-disc pl-5 space-y-2"><li><b>Weights are frozen</b> once set — no curve fitting. Weekly attribution uses the same fixed weights.</li><li><b>The 10-year rolling window</b> means truly unprecedented extremes get clipped at 0 or 100. By design — the thermometer measures "position relative to history", not absolute level.</li><li><b>The data_quality field</b> tags rows as <code>ok</code> (all three sub-temps produced) or <code>&lt;sub&gt;_unavailable</code> (e.g. <code>liquidity_unavailable</code> when every input in that sub-temp was missing for the day). Single-indicator gaps inside a sub-temp auto-renormalize on the available weights and don't surface in this field.</li><li><b>The daily brief</b> in gold/ is just narrative — LLM or template stitches these silver numbers into prose, no new calculations.</li></ul>
+    </div>
+  </section>
+
+</main>
+
+
+<footer class="max-w-[1280px] mx-auto px-6 mt-16 pt-8 border-t border-black/5 text-xs uppercase tracking-wider text-ink-muted">
+  <div class="flex flex-col sm:flex-row justify-between gap-2">
+    <span>FinSynapse · Plan §11 thermometer</span>
+    <span class="flex items-center gap-1.5">
+      Powered by
+      <a href="https://github.com/hgDendi/FinSynapse" target="_blank" rel="noopener"
+         class="inline-flex items-center gap-1 normal-case font-semibold text-ink-soft hover:text-ink transition">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        FinSynapse
+      </a>
+      <span class="opacity-60">— view on GitHub</span>
+    </span>
+  </div>
+  <div class="text-right mt-1 opacity-60">2026-05-01</div>
+  
+  <div class="text-right mt-1 opacity-60 normal-case tracking-normal">
+    This site uses Microsoft Clarity for anonymous analytics · <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener" class="underline hover:text-ink-soft">privacy policy</a>
+  </div>
+  
+</footer>
+</body>
+</html>

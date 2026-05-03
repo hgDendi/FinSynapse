@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "asof": "2026-05-01",
+  "markets": {
+    "cn": {
+      "available": true,
+      "asof": "2026-04-30",
+      "latest_complete_date": "2026-04-30",
+      "overall": 74.36923173349628,
+      "sub_temperatures": {
+        "valuation": 68.57142857142857,
+        "sentiment": 81.50793650793649,
+        "liquidity": 75.66798941798942
+      },
+      "change_1w": {
+        "overall": -3.5145522658656034,
+        "attribution": {
+          "valuation": -5.793650793650798,
+          "sentiment": -8.07936507936509,
+          "liquidity": -0.43650793650793673
+        }
+      },
+      "data_quality": "ok",
+      "subtemp_completeness": 3,
+      "is_complete": true
+    },
+    "hk": {
+      "available": true,
+      "asof": "2026-04-30",
+      "latest_complete_date": "2026-04-30",
+      "overall": 29.458450046685343,
+      "sub_temperatures": {
+        "valuation": 10.317460317460316,
+        "sentiment": 75.39682539682539,
+        "liquidity": 69.48214285714286
+      },
+      "change_1w": {
+        "overall": -1.0597572362278278,
+        "attribution": {
+          "valuation": 2.5,
+          "sentiment": -9.603174603174608,
+          "liquidity": 1.1567460317460387
+        }
+      },
+      "data_quality": "ok",
+      "subtemp_completeness": 3,
+      "is_complete": true
+    },
+    "us": {
+      "available": true,
+      "asof": "2026-05-01",
+      "latest_complete_date": "2026-05-01",
+      "overall": 97.05357142857143,
+      "sub_temperatures": {
+        "valuation": 97.05357142857143,
+        "sentiment": 38.672161172161175,
+        "liquidity": 47.12896825396825
+      },
+      "change_1w": {
+        "overall": 5.904761904761912,
+        "attribution": {
+          "valuation": 5.904761904761912,
+          "sentiment": -8.078191505141625,
+          "liquidity": 0.16765873015872756
+        }
+      },
+      "data_quality": "ok",
+      "subtemp_completeness": 3,
+      "is_complete": true
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "window_days": 90,
+  "asof": "2026-03-30",
+  "signals": [
+    {
+      "date": "2026-03-10",
+      "pair": "hsi_southbound",
+      "strength": 4.04174116142587,
+      "description": "HSI ↑ + southbound ↓: HK rises without mainland support — foreign-led rally?",
+      "a_change_pct": 2.170298525681802,
+      "b_change_pct": -186.22973354120268
+    },
+    {
+      "date": "2026-03-03",
+      "pair": "csi300_volume",
+      "strength": 0.12578062825075925,
+      "description": "CSI300 ↑ + turnover ↓: rally without participation — distribution risk",
+      "a_change_pct": -1.5389109566437131,
+      "b_change_pct": 8.173353221493752
+    },
+    {
+      "date": "2026-02-12",
+      "pair": "gold_real_rate",
+      "strength": 0.09407217643084066,
+      "description": "Gold ↑ + real yield ↑: de-dollarization / sovereign hedge bid?",
+      "a_change_pct": -2.9162374693560533,
+      "b_change_pct": -3.2258064516129115
+    },
+    {
+      "date": "2026-03-20",
+      "pair": "sp500_us10y",
+      "strength": 0.03889733259859604,
+      "description": "SP500 ↑ + 10Y ↓: liquidity-driven rally without growth confirmation",
+      "a_change_pct": -1.5138182356779217,
+      "b_change_pct": 2.569485006974892
+    },
+    {
+      "date": "2026-03-23",
+      "pair": "hsi_dxy",
+      "strength": 0.024868099216177584,
+      "description": "HSI ↑ + DXY ↑: HK rallies despite USD strength — domestic catalyst?",
+      "a_change_pct": -3.540128456308256,
+      "b_change_pct": -0.7024631880762522
+    },
+    {
+      "date": "2026-03-19",
+      "pair": "sp500_vix",
+      "strength": 0.011284430228642058,
+      "description": "SP500 ↑ + VIX ↑: rising on rising fear — beware",
+      "a_change_pct": -0.2748797741878972,
+      "b_change_pct": -4.105223915430189
+    },
+    {
+      "date": "2026-03-30",
+      "pair": "us10y_dxy",
+      "strength": 0.007934062121923009,
+      "description": "10Y ↑ + DXY ↓: yields up, dollar down — credit/inflation regime shift?",
+      "a_change_pct": -2.2072082956776984,
+      "b_change_pct": 0.3594614127474971
+    }
+  ]
+}

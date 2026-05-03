@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "asof": "2026-05-02",
+  "indicators": [
+    {
+      "indicator": "hkdcny",
+      "value": 0.8708999752998352,
+      "percentile_5y": 26.58730158730159,
+      "percentile_10y": 38.13492063492063
+    },
+    {
+      "indicator": "usdcny",
+      "value": 6.827099800109863,
+      "percentile_5y": 26.825396825396826,
+      "percentile_10y": 39.56349206349206
+    }
+  ]
+}

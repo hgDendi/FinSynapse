@@ -53,6 +53,7 @@ chroma_db/
 # champion_baseline.json 是审计日志，需要入库（手动 git add 后会被覆盖跟踪）
 scripts/validation_report.json
 scripts/cnn_fear_greed.csv
+scripts/oos_results.json
 
 # --- Worktrees（code-review skill 用的临时隔离 workspace） ---
 .worktrees/

@@ -128,6 +128,24 @@ gold/    叙事：人类/LLM 读得懂的结论
 
 ---
 
+## 4.5 JSON API 端点
+
+每日构建会同时把机器可读的 JSON 端点推到 GitHub Pages，方便外部 agent / 工具直接消费温度数据，无需爬 HTML：
+
+| 端点 | 内容 |
+|---|---|
+| `/api/manifest.json` | Schema 版本 + asof + 所有端点清单 |
+| `/api/temperature_latest.json` | 三市场最新 overall + 子温度 + 一周变化归因 |
+| `/api/temperature_history.json.gz` | 全量历史时间序列（gzip） |
+| `/api/indicators_latest.json` | 所有底层因子最新读数 + 5y/10y 滚动百分位 |
+| `/api/divergence_latest.json` | 90 天内活跃背离信号，按强度排序 |
+
+线上访问：`https://hgdendi.github.io/FinSynapse/api/manifest.json`
+
+Schema 版本遵循 SemVer：新增字段是非破坏性变更（不 bump），删除或修改字段语义会 bump major。
+
+---
+
 ## 5. 看板数值口径
 
 ### 5.1 市场温度计（0-100°）

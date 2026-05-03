@@ -25,28 +25,39 @@ import numpy as np
 import pandas as pd
 import yaml
 
+# Allow direct execution via `uv run python scripts/run_validation.py`
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from finsynapse.transform.normalize import collect_bronze, derive_indicators
 from finsynapse.transform.percentile import compute_percentiles
 from finsynapse.transform.temperature import MARKETS, SUB_NAMES, WeightsConfig, compute_temperature
 from finsynapse.transform.version import ALGO_VERSION
+from scripts.validation_lib import (
+    INDEX_MAP,
+    SCIPY_AVAILABLE,
+    ForwardReturnRow,
+)
+from scripts.validation_lib import (
+    compute_forward_returns as _compute_forward_returns,
+)
+from scripts.validation_lib import (
+    directional_ok as _directional_ok,
+)
+from scripts.validation_lib import (
+    spearman_rho as _spearman_rho,
+)
+from scripts.validation_lib import (
+    strict_ok as _strict_ok,
+)
+from scripts.validation_lib import (
+    zone_of as _zone,
+)
 
 SCRIPTS_DIR = Path(__file__).parent
 PIVOTS_PATH = SCRIPTS_DIR / "backtest_pivots.yaml"
 
-STRICT_ZONES = {"cold": (0, 30), "mid": (30, 70), "hot": (70, 100)}
 ZONE_NAMES = ["0-20 (极冷)", "20-40", "40-60", "60-80", "80-100 (极热)"]
 ZONE_BINS = [0, 20, 40, 60, 80, 100]
-
-# Index tickers mapped to macro indicator names for forward-return computation.
-INDEX_MAP = {"us": "sp500", "cn": "csi300", "hk": "hsi"}
-FORWARD_HORIZONS = {"1m": 21, "3m": 63, "6m": 126, "12m": 252}
-SCIPY_AVAILABLE = False
-try:
-    from scipy import stats as _scipy_stats  # noqa: F401
-
-    SCIPY_AVAILABLE = True
-except ImportError:
-    pass
 
 
 @dataclass
@@ -89,57 +100,6 @@ class PivotResult:
             "expected_zone": self.expected_zone,
             "controllers": [c.to_dict() for c in self.controllers],
         }
-
-
-@dataclass
-class ForwardReturnRow:
-    date: date
-    market: str
-    temperature: float
-    return_1m: float | None = None
-    return_3m: float | None = None
-    return_6m: float | None = None
-    return_12m: float | None = None
-
-    def to_dict(self) -> dict:
-        return {
-            "date": self.date.isoformat(),
-            "market": self.market,
-            "temperature": round(self.temperature, 1),
-            "return_1m": round(self.return_1m, 4) if self.return_1m is not None else None,
-            "return_3m": round(self.return_3m, 4) if self.return_3m is not None else None,
-            "return_6m": round(self.return_6m, 4) if self.return_6m is not None else None,
-            "return_12m": round(self.return_12m, 4) if self.return_12m is not None else None,
-        }
-
-
-def _zone(overall: float) -> str:
-    if pd.isna(overall):
-        return "nan"
-    if overall >= 70:
-        return "hot"
-    if overall < 30:
-        return "cold"
-    return "mid"
-
-
-def _strict_ok(value: float, expected: str) -> bool:
-    if pd.isna(value):
-        return False
-    if expected == "hot":
-        return value >= 70
-    lo, hi = STRICT_ZONES[expected]
-    return lo <= value < hi
-
-
-def _directional_ok(value: float, expected: str) -> bool:
-    if pd.isna(value):
-        return False
-    if expected == "cold":
-        return value < 50
-    if expected == "hot":
-        return value > 50
-    return 25 <= value <= 75
 
 
 def _build_temperature_from_pct_wide(
@@ -209,50 +169,6 @@ def _resolve_temp_at_date(temp_df: pd.DataFrame, market: str, target: date) -> d
     return sel.iloc[0].to_dict()
 
 
-def _compute_forward_returns(macro_long: pd.DataFrame, temp_df: pd.DataFrame) -> list[ForwardReturnRow]:
-    """For every date in temp_df, compute forward index returns at 1m/3m/6m/12m."""
-    wide = macro_long.pivot_table(index="date", columns="indicator", values="value").sort_index()
-    wide.index = pd.to_datetime(wide.index)
-
-    rows: list[ForwardReturnRow] = []
-    for market, idx_ticker in INDEX_MAP.items():
-        if idx_ticker not in wide.columns:
-            continue
-        prices = wide[idx_ticker].dropna()
-        sub = temp_df[temp_df["market"] == market].copy()
-        sub["date"] = pd.to_datetime(sub["date"])
-        for _, row in sub.iterrows():
-            t = pd.Timestamp(row["date"])
-            if t not in prices.index:
-                continue
-            current = prices.loc[t]
-            fwd: dict[str, float | None] = {}
-            t_pos = prices.index.get_loc(t)
-            n_prices = len(prices.index)
-            for label, days in FORWARD_HORIZONS.items():
-                # FORWARD_HORIZONS values are TRADING-day counts (21/63/126/252).
-                # Use positional offset on the trading-day index so 6m == ~126 trading days,
-                # not 126 calendar days (~4.2 months).
-                fwd_pos = t_pos + days
-                if fwd_pos >= n_prices:
-                    fwd[f"return_{label}"] = None
-                    continue
-                fwd_price = prices.iloc[fwd_pos]
-                fwd[f"return_{label}"] = float(fwd_price / current - 1.0)
-            rows.append(
-                ForwardReturnRow(
-                    date=t.date(),
-                    market=market,
-                    temperature=float(row["overall"]),
-                    return_1m=fwd.get("return_1m"),
-                    return_3m=fwd.get("return_3m"),
-                    return_6m=fwd.get("return_6m"),
-                    return_12m=fwd.get("return_12m"),
-                )
-            )
-    return rows
-
-
 def _zone_distribution(forward_rows: list[ForwardReturnRow]) -> dict[str, list]:
     """Bucket forward returns by temperature zone."""
     buckets: dict[str, dict[str, list]] = {z: {"1m": [], "3m": [], "6m": [], "12m": []} for z in ZONE_NAMES}
@@ -283,24 +199,6 @@ def _zone_distribution(forward_rows: list[ForwardReturnRow]) -> dict[str, list]:
                     {"horizon": h_label, "mean_return": None, "median_return": None, "win_rate": None, "n": 0}
                 )
     return result
-
-
-def _spearman_rho(forward_rows: list[ForwardReturnRow], market: str, horizon: str) -> float | None:
-    """Compute Spearman ρ between temperature and forward return."""
-    if not SCIPY_AVAILABLE:
-        return None
-    xs = [r.temperature for r in forward_rows if r.market == market and getattr(r, f"return_{horizon}") is not None]
-    ys = [
-        getattr(r, f"return_{horizon}")
-        for r in forward_rows
-        if r.market == market and getattr(r, f"return_{horizon}") is not None
-    ]
-    if len(xs) < 30:
-        return None
-    from scipy import stats
-
-    rho, _ = stats.spearmanr(xs, ys)
-    return float(rho)
 
 
 def _hit_rate_table(pivot_results: list[PivotResult]) -> dict:

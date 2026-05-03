@@ -128,6 +128,24 @@ gold/    narrative: human/LLM-readable conclusions
 
 ---
 
+## 4.5 JSON API endpoints
+
+Each daily build publishes machine-readable JSON endpoints alongside the dashboard, so external agents / tooling can consume temperature data without scraping HTML:
+
+| Endpoint | Contents |
+|---|---|
+| `/api/manifest.json` | Schema version + asof + endpoint inventory |
+| `/api/temperature_latest.json` | Per-market latest overall + sub-temps + 1-week change attribution |
+| `/api/temperature_history.json.gz` | Full historical time series (gzipped) |
+| `/api/indicators_latest.json` | All underlying factors' latest values + 5y/10y rolling percentiles |
+| `/api/divergence_latest.json` | Active divergence signals from the last 90 days, sorted by strength |
+
+Live: `https://hgdendi.github.io/FinSynapse/api/manifest.json`
+
+Schema version follows SemVer: adding fields is non-breaking (no bump); removing or changing field semantics bumps major.
+
+---
+
 ## 5. Dashboard semantics
 
 ### 5.1 Market thermometer (0–100°)

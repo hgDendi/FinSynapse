@@ -1,0 +1,86 @@
+[
+  {
+    "date": "2026-05-01",
+    "algo_version": "2.1",
+    "gate_passed": true,
+    "markets": {
+      "cn": {
+        "directional_rate": 0.875,
+        "strict_rate": 0.875,
+        "spearman_rho_3m": -0.1533605758529639,
+        "spearman_rho_6m": -0.2723766786129967,
+        "bootstrap_band_width": 6.0
+      },
+      "hk": {
+        "directional_rate": 0.875,
+        "strict_rate": 0.625,
+        "spearman_rho_3m": -0.1446481795174878,
+        "spearman_rho_6m": -0.17448176067276158,
+        "bootstrap_band_width": 7.2
+      },
+      "us": {
+        "directional_rate": 0.889,
+        "strict_rate": 0.444,
+        "spearman_rho_3m": -0.2170588807189451,
+        "spearman_rho_6m": -0.16148959952441724,
+        "bootstrap_band_width": 6.0
+      }
+    }
+  },
+  {
+    "date": "2026-05-03",
+    "algo_version": "2.1",
+    "gate_passed": true,
+    "markets": {
+      "cn": {
+        "directional_rate": 1.0,
+        "strict_rate": 0.875,
+        "spearman_rho_3m": -0.2618264636895131,
+        "spearman_rho_6m": -0.3929928100943819,
+        "bootstrap_band_width": 5.3
+      },
+      "hk": {
+        "directional_rate": 0.875,
+        "strict_rate": 0.625,
+        "spearman_rho_3m": -0.1446481795174878,
+        "spearman_rho_6m": -0.17448176067276158,
+        "bootstrap_band_width": 7.2
+      },
+      "us": {
+        "directional_rate": 0.889,
+        "strict_rate": 0.444,
+        "spearman_rho_3m": -0.2123954299080261,
+        "spearman_rho_6m": -0.15329690804805335,
+        "bootstrap_band_width": 5.8
+      }
+    }
+  },
+  {
+    "date": "2026-05-04",
+    "algo_version": "2.1",
+    "gate_passed": true,
+    "markets": {
+      "cn": {
+        "directional_rate": 1.0,
+        "strict_rate": 0.875,
+        "spearman_rho_3m": -0.2618264636895131,
+        "spearman_rho_6m": -0.3929928100943819,
+        "bootstrap_band_width": 5.3
+      },
+      "hk": {
+        "directional_rate": 0.875,
+        "strict_rate": 0.625,
+        "spearman_rho_3m": -0.1446481795174878,
+        "spearman_rho_6m": -0.17448176067276158,
+        "bootstrap_band_width": 7.2
+      },
+      "us": {
+        "directional_rate": 0.889,
+        "strict_rate": 0.444,
+        "spearman_rho_3m": -0.2123954299080261,
+        "spearman_rho_6m": -0.15329690804805335,
+        "bootstrap_band_width": 5.8
+      }
+    }
+  }
+]

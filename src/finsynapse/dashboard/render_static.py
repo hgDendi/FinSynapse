@@ -13,6 +13,7 @@ from markupsafe import Markup
 from plotly.utils import PlotlyJSONEncoder
 
 from finsynapse.dashboard import charts
+from finsynapse.dashboard.api import write_all as _write_api_endpoints
 from finsynapse.dashboard.data import MARKETS, DashboardData, load
 from finsynapse.dashboard.historical_events import event_label
 from finsynapse.dashboard.i18n import (
@@ -642,4 +643,5 @@ def render(out_dir: Path | str = "dist", data: DashboardData | None = None) -> l
     written.extend(_render_glossary_pages(env, out_dir, data, weights))
     written.extend(_render_brief_pages(env, out_dir, briefs))
     written.extend(_render_archive_index(env, out_dir, briefs, asof_str))
+    written.extend(_write_api_endpoints(data, out_dir))
     return written

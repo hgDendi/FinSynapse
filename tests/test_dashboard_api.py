@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import json
 from pathlib import Path
 
@@ -141,3 +142,17 @@ def test_divergence_latest_payload(tmp_path: Path):
     assert sig["strength"] == 0.55
     assert sig["a_change_pct"] == 2.0
     assert sig["b_change_pct"] == 10.0
+
+
+def test_temperature_history_is_gzipped_and_per_market(tmp_path: Path):
+    data = _sample_dashboard_data(tmp_path)
+    write_all(data, tmp_path / "dist")
+    history_path = tmp_path / "dist" / "api" / "temperature_history.json.gz"
+    assert history_path.exists()
+    payload = json.loads(gzip.decompress(history_path.read_bytes()).decode("utf-8"))
+    assert payload["schema_version"]
+    assert "us" in payload["markets"]
+    us_series = payload["markets"]["us"]
+    assert us_series[0]["date"] == "2026-04-30"
+    assert us_series[0]["overall"] == 75.2
+    assert us_series[0]["valuation"] == 80.0

@@ -155,6 +155,33 @@ def _build_divergence_latest(data: DashboardData, window_days: int = 90) -> dict
     }
 
 
+HISTORY_COLUMNS = ("overall", "valuation", "sentiment", "liquidity")
+
+
+def _build_temperature_history(data: DashboardData) -> dict[str, Any]:
+    df = data.temperature.copy()
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.sort_values(["market", "date"])
+    markets_payload: dict[str, list[dict[str, Any]]] = {}
+    for market in MARKETS:
+        sub = df[df["market"] == market]
+        if sub.empty:
+            continue
+        rows = []
+        for _, row in sub.iterrows():
+            entry = {"date": row["date"].strftime("%Y-%m-%d")}
+            for col in HISTORY_COLUMNS:
+                if col in row:
+                    entry[col] = _safe_float(row[col])
+            rows.append(entry)
+        markets_payload[market] = rows
+    return {
+        "schema_version": API_SCHEMA_VERSION,
+        "asof": pd.to_datetime(data.temperature["date"].max()).strftime("%Y-%m-%d"),
+        "markets": markets_payload,
+    }
+
+
 def write_all(data: DashboardData, out_dir: Path) -> list[Path]:
     api_dir = out_dir / "api"
     api_dir.mkdir(parents=True, exist_ok=True)
@@ -177,6 +204,12 @@ def write_all(data: DashboardData, out_dir: Path) -> list[Path]:
     if divergence["signals"]:
         p = api_dir / "divergence_latest.json"
         p.write_text(json.dumps(divergence, indent=2, ensure_ascii=False))
+        written.append(p)
+
+    history = _build_temperature_history(data)
+    if history["markets"]:
+        p = api_dir / "temperature_history.json.gz"
+        p.write_bytes(gzip.compress(json.dumps(history, ensure_ascii=False).encode("utf-8")))
         written.append(p)
 
     asof = temp_latest["asof"]

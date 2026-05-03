@@ -79,11 +79,6 @@ def derive_indicators(macro_long: pd.DataFrame) -> pd.DataFrame:
     derived: list[pd.DataFrame] = []
 
     if {"us_pe_ttm", "us10y_real_yield"}.issubset(wide_ffill.columns):
-        # Guard PE > 0 before division. Non-positive PE produces inf or a
-        # sign-flipped earnings yield, which after direction "-" in
-        # weights.yaml becomes a bogus high-temperature reading on US
-        # valuation. Dropping the row is correct: there is no meaningful
-        # "100/0" equity risk premium.
         pe_safe = wide_ffill["us_pe_ttm"].where(wide_ffill["us_pe_ttm"] > 0)
         ey = 100.0 / pe_safe
         erp = (ey - wide_ffill["us10y_real_yield"]).dropna()
@@ -94,6 +89,36 @@ def derive_indicators(macro_long: pd.DataFrame) -> pd.DataFrame:
                         "date": erp.index.date,
                         "indicator": "us_erp",
                         "value": erp.values,
+                        "source": "derived",
+                    }
+                )
+            )
+
+    if "cn_social_financing_12m" in wide_ffill.columns:
+        sf = wide_ffill["cn_social_financing_12m"].dropna()
+        if len(sf) >= 13:
+            credit_impulse = sf.pct_change(252).dropna()
+            if not credit_impulse.empty:
+                derived.append(
+                    pd.DataFrame(
+                        {
+                            "date": credit_impulse.index.date,
+                            "indicator": "cn_credit_impulse",
+                            "value": credit_impulse.values,
+                            "source": "derived",
+                        }
+                    )
+                )
+
+    if "usdcny" in wide_ffill.columns:
+        usdcny = wide_ffill["usdcny"].dropna()
+        if not usdcny.empty:
+            derived.append(
+                pd.DataFrame(
+                    {
+                        "date": usdcny.index.date,
+                        "indicator": "cn_usdcny_pressure",
+                        "value": usdcny.values,
                         "source": "derived",
                     }
                 )

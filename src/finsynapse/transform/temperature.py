@@ -206,6 +206,8 @@ def _compute_market_rows(
             return ",".join(f"{s}_unavailable" for s in missing) if missing else "ok"
 
         df["data_quality"] = df.apply(_row_quality, axis=1)
+        df["subtemp_completeness"] = df[["valuation", "sentiment", "liquidity"]].notna().sum(axis=1)
+        df["is_complete"] = df["subtemp_completeness"] == 3
         rows.append(df)
     return rows
 

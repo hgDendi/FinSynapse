@@ -789,6 +789,37 @@ class TestValidationReportPhase34Fields:
         assert report.bootstrap_ci is None
 
 
+class TestBacktestConsistency:
+    """Phase 1 fix: backtest_temperature.py must share pivot definitions and logic with run_validation.py."""
+
+    def test_backtest_loads_pivots_from_yaml_not_hardcoded(self):
+        bt_path = SCRIPTS_DIR / "backtest_temperature.py"
+        src = bt_path.read_text()
+        assert "backtest_pivots.yaml" in src
+        assert "PIVOTS: tuple[Pivot, ...]" not in src
+
+    def test_backtest_calls_derive_indicators(self):
+        bt_path = SCRIPTS_DIR / "backtest_temperature.py"
+        src = bt_path.read_text()
+        assert "derive_indicators" in src
+
+    def test_backtest_shares_functions_with_run_validation(self):
+        bt_path = SCRIPTS_DIR / "backtest_temperature.py"
+        src = bt_path.read_text()
+        assert "from run_validation import" in src
+        assert "_directional_ok" in src
+        assert "_strict_ok" in src
+        assert "_resolve_temp_at_date" in src
+
+    def test_gate_check_docstring_matches_implementation(self):
+        """_gate_check docstring must not claim |rho(MF)| >= |rho(PE)|."""
+        rv = _load_run_validation_module()
+        import inspect
+
+        doc = inspect.getdoc(rv._gate_check) or ""
+        assert "|ρ(MF, 3m forward)|  >= |ρ(PE, 3m forward)|" not in doc
+
+
 class TestFetchExternalAnchorsTLS:
     """Fix #5 — TLS verification must NOT be disabled."""
 

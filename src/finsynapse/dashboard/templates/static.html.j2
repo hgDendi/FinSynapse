@@ -214,6 +214,16 @@
             <span class="px-2.5 py-1 rounded-full text-xs font-semibold border border-white/60 bg-white/60 accent-{{ c.accent }}">{{ c.zone_label }}</span>
           </div>
 
+          {% if c.latest_complete_date %}
+          <div class="flex items-center gap-1.5 text-xs text-ink-muted -mt-3">
+            <span class="material-symbols-outlined text-sm opacity-70">calendar_today</span>
+            {{ c.latest_complete_date }}
+            {% if c.subtemp_completeness is not none and c.subtemp_completeness < 3 %}
+            <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-100/60 text-amber-800 text-[10px] font-medium">数据不完整 ({{ c.subtemp_completeness }}/3)</span>
+            {% endif %}
+          </div>
+          {% endif %}
+
           <!-- Gauge (Plotly indicator — drawn after page load) -->
           <div id="gauge_{{ c.market }}" class="-mx-2"></div>
 

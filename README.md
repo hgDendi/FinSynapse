@@ -145,9 +145,9 @@ gold/    叙事：人类/LLM 读得懂的结论
 
 | 市场 | valuation | sentiment | liquidity | 设计依据 |
 |---|---:|---:|---:|---|
-| CN | 0.50 | 0.30 | 0.20 | A 股估值定调；情绪三因子（北向 / 换手 / 两融）；M2+社融+SHIBOR-1W |
-| HK | 0.60 | 0.25 | 0.15 | EWH 股息率锚估值；南向单因子情绪；HIBOR-1M+US 利率/DXY 流动性 |
-| US | 0.40 | 0.35 | 0.25 | PE+CAPE+ERP 三因子估值（破"PE 永远高位"困境）；VIX+HY OAS 情绪；实际利率+DXY+NFCI 流动性 |
+| CN | 0.65 | 0.20 | 0.15 | A 股估值定调；情绪四因子（北向/换手/两融/CNY压力）；M2+社融+信用脉冲+SHIBOR-1W |
+| HK | 0.60 | 0.25 | 0.15 | EWH 股息率锚估值；南向+VHSI 情绪；HIBOR-1M+US 利率/DXY 流动性 |
+| US | 0.35 | 0.45 | 0.20 | PE+CAPE+ERP 三因子估值；VIX+HY OAS+UMich 情绪；实际利率+DXY+NFCI+WALCL 流动性 |
 
 **温度区间**（[`src/finsynapse/notify/state.py`](./src/finsynapse/notify/state.py)）：
 
@@ -157,58 +157,73 @@ gold/    叙事：人类/LLM 读得懂的结论
 
 完整指标 → 子温度映射见 §5.2 与 [`config/weights.yaml`](./config/weights.yaml)，改完 `transform run --layer temperature` 立刻生效，**不需要重抓 bronze**（百分位基线本身不依赖权重）。
 
-回测验证（[`scripts/backtest_temperature.py`](./scripts/backtest_temperature.py)）：当前权重 9 个历史关键时点 directional 9/9 PASS、严格区间 7-8/9 PASS（具体数字依 FRED key 是否配置）。
+回测验证（[`scripts/backtest_temperature.py`](./scripts/backtest_temperature.py) + [`scripts/run_validation.py`](./scripts/run_validation.py)）：从 [`backtest_pivots.yaml`](./scripts/backtest_pivots.yaml) 加载 25 个历史关键时点（US 9、CN 8、HK 8）。Gate 要求多因子在 ≥2/3 市场中击败 PE 单因子基准，且前瞻 Spearman ρ 为负（均值回归信号）。当前 gate 3/3 PASS，详见验证报告。
 
 ### 5.2 指标清单
 
 每市场 3 个子温度由若干基础 indicator 加权。**方向** `+` = 百分位高 → 高温；`-` 反向。**窗口** `5y` 用于 regime 切换快的指标，`10y` 用于慢变量。
 
-#### US（综合 0.40 val + 0.35 sent + 0.25 liq）
+#### US（综合 0.35 val + 0.45 sent + 0.20 liq）
 
 | 子温度 | 指标 | 权重 | 方向 | 窗口 | 来源 | 备注 |
-|---|---|---:|---|---|---|---|
+|---|---|---|---:|---|---|---|---|
 | val | `us_pe_ttm` | 0.35 | + | 10y | multpl.com | S&P500 TTM PE |
 | val | `us_cape` | 0.35 | + | 10y | multpl.com | Shiller 10Y 平滑 EPS |
 | val | `us_erp` | 0.30 | − | 10y | derived | `100/PE − 实际利率`，破"PE 永远高位"困境 |
-| sent | `vix` | 0.50 | − | 5y | yfinance | 隐含波动率 = 恐慌 |
-| sent | `us_hy_oas` | 0.50 | − | 5y | FRED `BAMLH0A0HYM2` | HY 信用利差，⚠️ FRED 自 2026-04 仅返回 3Y 滚动（ICE BofA 授权变化） |
-| liq | `us10y_real_yield` | 0.30 | − | 10y | FRED `DFII10` | 实际利率高 = 紧 |
-| liq | `dxy` | 0.20 | − | 5y | yfinance | 美元强 = 全球流动性紧 |
-| liq | `us_nfci` | 0.50 | − | 5y | FRED `NFCI` | Chicago Fed 综合金融条件，全 1971+ 历史 |
+| sent | `vix` | 0.40 | − | 5y | yfinance | 隐含波动率 = 恐慌 |
+| sent | `us_hy_oas` | 0.35 | − | 5y | FRED `BAMLH0A0HYM2` | HY 信用利差，⚠️ FRED 自 2026-04 仅返回 3Y 滚动 |
+| sent | `us_umich_sentiment` | 0.25 | + | 10y | FRED `UMCSENT` | 密歇根大学消费者信心 |
+| liq | `us10y_real_yield` | 0.25 | − | 10y | FRED `DFII10` | 实际利率高 = 紧 |
+| liq | `dxy` | 0.15 | − | 5y | yfinance | 美元强 = 全球流动性紧 |
+| liq | `us_nfci` | 0.35 | − | 5y | FRED `NFCI` | Chicago Fed 综合金融条件 |
+| liq | `us_walcl` | 0.25 | + | 5y | FRED `WALCL` | 美联储资产负债表（QE/QT 周期） |
 
-#### CN（综合 0.50 val + 0.30 sent + 0.20 liq）
+#### CN（综合 0.65 val + 0.20 sent + 0.15 liq）
 
 | 子温度 | 指标 | 权重 | 方向 | 窗口 | 来源 | 备注 |
-|---|---|---:|---|---|---|---|
+|---|---|---|---:|---|---|---|---|
 | val | `csi300_pe_ttm` | 0.50 | + | 10y | AkShare | 沪深 300 TTM PE |
 | val | `csi300_pb` | 0.50 | + | 10y | AkShare | 沪深 300 PB |
-| sent | `cn_north_5d` | 0.35 | + | 5y | AkShare | 北向 5d 净买入，⚠️ 监管原因 2024-08 后日频停更，自动重归一到其他两项 |
+| sent | `cn_north_5d` | 0.25 | + | 5y | AkShare | 北向 5d 净买入，⚠️ 监管原因 2024-08 后日频停更 |
 | sent | `cn_a_turnover_5d` | 0.25 | + | 5y | AkShare | A 股总成交额 5d 均 |
-| sent | `cn_margin_balance` | 0.40 | + | 5y | AkShare | SH+SZ 两融余额（亿元），A 股顶/底经典信号 |
-| liq | `cn_m2_yoy` | 0.35 | + | 10y | AkShare | M2 同比 |
-| liq | `cn_social_financing_12m` | 0.35 | + | 10y | AkShare | 社融 12M 滚动求和 |
-| liq | `cn_dr007` | 0.30 | − | 5y | AkShare | 实为 SHIBOR-1W（DR007 无免费日频源，相关 >0.95） |
+| sent | `cn_margin_balance` | 0.35 | + | 5y | AkShare | SH+SZ 两融余额 |
+| sent | `cn_usdcny_pressure` | 0.15 | − | 5y | derived | USD/CNY 汇率 → 人民币压力，高 = 资本外流压力 = 冷 |
+| liq | `cn_m2_yoy` | 0.25 | + | 10y | AkShare | M2 同比 |
+| liq | `cn_social_financing_12m` | 0.25 | + | 10y | AkShare | 社融 12M 滚动求和 |
+| liq | `cn_credit_impulse` | 0.25 | + | 5y | derived | 社融 YoY 加速度，捕捉信贷扩张/收缩动能 |
+| liq | `cn_dr007` | 0.25 | − | 5y | AkShare | 实为 SHIBOR-1W（DR007 无免费日频源） |
 
 #### HK（综合 0.60 val + 0.25 sent + 0.15 liq）
 
 | 子温度 | 指标 | 权重 | 方向 | 窗口 | 来源 | 备注 |
-|---|---|---:|---|---|---|---|
+|---|---|---|---:|---|---|---|---|
 | val | `hk_ewh_yield_ttm` | 1.00 | − | 10y | yfinance EWH | TTM 股息率（高 = 便宜 = 冷） |
-| sent | `cn_south_5d` | 1.00 | + | 5y | AkShare | 南向 5d 净买入 |
+| sent | `cn_south_5d` | 0.60 | + | 5y | AkShare | 南向 5d 净买入 |
+| sent | `hk_vhsi` | 0.40 | − | 5y | AkShare | 恒指波幅指数（HK 版 VIX） |
 | liq | `us10y_real_yield` | 0.30 | − | 10y | FRED `DFII10` | 联系汇率借用 US 利率 |
 | liq | `dxy` | 0.20 | − | 5y | yfinance | 联系汇率借用 USD 强弱 |
-| liq | `hk_hibor_1m` | 0.50 | − | 5y | AkShare `macro_china_hk_market_info` | HKD 端实际融资成本（HKMA 通过它捍卫汇率） |
+| liq | `hk_hibor_1m` | 0.50 | − | 5y | AkShare | HKD 端实际融资成本 |
 
-> **HK 已 backlog 未做的指标**（详见 [`docs/_local/2026-04-29-execution-plan.md`](./docs/_local/) Phase 1d）：
-> - **HSI PE**：AkShare `stock_hk_index_value_em` 接口 2026-04 已下架；唯一替代是抓恒指公司月度 factsheet（需 Playwright，与已放弃的 PCR 同等工程量）
+> **HK 原生估值因子暂未接入**：AkShare `stock_hk_index_value_em` 接口在当前版本中不存在，`stock_hk_index_daily_em` 仅返回价格。HSI PE/PB 需抓恒指公司月度 factsheet（需 Playwright），与已放弃的 PCR 同等工程复杂度。目前以 EWH 股息率作为估值代理，详见 `scripts/probe_hk_valuation.py`。
 > - **AH 溢价指数**：历史时间序列接口全部 404，仅 spot 接口可用（无历史回填，需自行积累月级才有信号）
 > - **HSI 期权 PCR**：HKEX 不开放免费日频；详见 plan §11.6 v0.6 决策
 
-### 5.3 一周温度变化归因
+### 5.3 数据新鲜度与完整性
+
+`siver/temperature_daily.parquet` 的原始最新日期（`asof`）可能包含不完整的行（如某市场当日只有 liquidity 子温度更新）。Dashboard 会从最近 10 个交易日中选最完整的一行展示，并在每个市场卡片上标注**实际使用的数据日期**和**最新完整日期**。
+
+`temperature_daily` 包含以下完整性字段：
+- `subtemp_completeness` — 0-3，当前有多少个子温度可用
+- `is_complete` — True 当 subtemp_completeness == 3
+- `data_quality` — `ok` 或 `<sub>_unavailable`（标注缺失的子温度）
+
+综合温度使用 **dispersion-weighted overall**：当子温度内部指标分歧大（max-min > 50pp），该子温度对综合温度的实际贡献会被削弱。分歧小的子温度获得更高置信权重。
+
+### 5.4 一周温度变化归因
 
 把过去 7 日 `Δoverall` 拆成 `Δval / Δsent / Δliq` 各自贡献，看板和简评里都列出来。**不用动态权重**——避免曲线拟合，权重一旦订就锁死，方向变化只来自指标本身。
 
-### 5.4 背离信号
+### 5.5 背离信号
 
 固定 5 对硬编码 `SignalPair`（[`src/finsynapse/transform/divergence.py`](./src/finsynapse/transform/divergence.py)）：
 
@@ -224,7 +239,7 @@ gold/    叙事：人类/LLM 读得懂的结论
 
 > 选硬编码 5 对而非统计异常检测——每对都有明确金融含义，过度通用化会淹没信号。
 
-### 5.5 数据健康
+### 5.6 数据健康
 
 每个 indicator 在 [`src/finsynapse/transform/health_check.py`](./src/finsynapse/transform/health_check.py) 有 plausibility bound（如 `vix: 5-200`、`us10y_yield: 0.1-25`、`csi300: 1000-20000`）：
 
@@ -233,7 +248,7 @@ gold/    叙事：人类/LLM 读得懂的结论
 
 设计意图：抓 unit drift / 解析错误（如某天价格 ×100），不抓「极端但合法」的行情移动（那是百分位机器要识别的）。
 
-### 5.6 数据降级标记
+### 5.7 数据降级标记
 
 `temperature_daily.parquet` 的 `data_quality` 字段记录该行实际可用情况，不阻断输出：
 
@@ -241,7 +256,7 @@ gold/    叙事：人类/LLM 读得懂的结论
 - `<sub>_unavailable` — 该子温度当天所有指标都缺数据（如 `liquidity_unavailable`）
 - 子温度内单指标缺失：自动按可用权重重归一，不进 `data_quality`，但回退过程显式见 §5.1（如 CN 北向 2024-08+ 停更后情绪从 0.35/0.25/0.40 → 0/0.38/0.62 自动归一）
 
-### 5.7 日报（gold/brief）
+### 5.8 日报（gold/brief）
 
 `finsynapse report brief` 优先级：`auto` 模式按 `ollama → deepseek → anthropic` 顺序尝试，**全失败时落到 deterministic Jinja 模板**，永远产出有效 .md。
 

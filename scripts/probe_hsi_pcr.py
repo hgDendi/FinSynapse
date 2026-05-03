@@ -8,6 +8,7 @@ Tries:
 Run:
   uv run python scripts/probe_hsi_pcr.py
 """
+
 from __future__ import annotations
 
 import re
@@ -34,9 +35,14 @@ def try_hkex_dqe(report_date: date) -> str | None:
             print(f"    status={r.status_code} len={len(r.content)} ctype={r.headers.get('content-type', '')[:50]}")
             if r.status_code == 200 and len(r.content) > 500:
                 # Check for PCR mention
-                text = r.text if "html" in r.headers.get("content-type", "").lower() or "text" in r.headers.get("content-type", "").lower() else ""
+                text = (
+                    r.text
+                    if "html" in r.headers.get("content-type", "").lower()
+                    or "text" in r.headers.get("content-type", "").lower()
+                    else ""
+                )
                 if text and ("put/call" in text.lower() or "p/c" in text.lower() or "putcall" in text.lower()):
-                    snippet = text[max(0, text.lower().find("put/call")-50):text.lower().find("put/call")+200]
+                    snippet = text[max(0, text.lower().find("put/call") - 50) : text.lower().find("put/call") + 200]
                     print(f"    HIT — snippet: {snippet!r}")
                     return url
         except Exception as e:
@@ -79,7 +85,7 @@ def try_optioncharts_or_alt() -> str | None:
                 for kw in ["put/call", "p/c ratio", "pcr"]:
                     if kw in txt:
                         idx = txt.find(kw)
-                        print(f"    HIT '{kw}': {r.text[max(0,idx-80):idx+200]!r}")
+                        print(f"    HIT '{kw}': {r.text[max(0, idx - 80) : idx + 200]!r}")
                         return url
         except Exception as e:
             print(f"    ERR {type(e).__name__}: {e}")

@@ -14,14 +14,14 @@ data; only prints what works and what doesn't.
 Usage:
     uv run python scripts/probe_phase_b.py
 """
+
 from __future__ import annotations
 
 import sys
 import traceback
 
-import pandas as pd
-
 import akshare as ak
+import pandas as pd
 
 
 def probe(name: str, fn, *, expect_min_rows: int = 1):
@@ -129,13 +129,13 @@ def main() -> int:
         "CN MARGIN (两融)": [
             ("macro_china_market_margin_sh", cn_margin_sh_macro),
             ("macro_china_market_margin_sz", cn_margin_sz_macro),
-            ("stock_margin_sse",             cn_margin_sse_total),
-            ("stock_margin_szse",            cn_margin_szse_total),
+            ("stock_margin_sse", cn_margin_sse_total),
+            ("stock_margin_szse", cn_margin_szse_total),
         ],
         "CN SHORT-RATE (DR007/SHIBOR)": [
-            ("macro_china_shibor_all",       cn_shibor_all),
-            ("rate_interbank Shibor 1周",    cn_repo_rate),
-            ("bond_china_close_return 7d",   cn_dr007_em),
+            ("macro_china_shibor_all", cn_shibor_all),
+            ("rate_interbank Shibor 1周", cn_repo_rate),
+            ("bond_china_close_return 7d", cn_dr007_em),
         ],
         "HK HSI PE": [
             ("stock_hk_index_value_em(HSI)", hk_hsi_value_em),
@@ -144,16 +144,16 @@ def main() -> int:
         ],
         "HK AH PREMIUM": [
             ("stock_hk_index_daily_em(HSAHP)", hk_ah_premium_index),
-            ("stock_zh_ah_spot",               hk_ah_premium_em),
+            ("stock_zh_ah_spot", hk_ah_premium_em),
             ("stock_hk_index_value_em(HSAHP)", hk_ah_premium_value_em),
         ],
         "HK HIBOR": [
-            ("rate_interbank Hibor 1M",        hk_hibor_interbank),
-            ("macro_china_hk_market_info",     hk_hibor_macro),
+            ("rate_interbank Hibor 1M", hk_hibor_interbank),
+            ("macro_china_hk_market_info", hk_hibor_macro),
         ],
     }
     for header, items in sections.items():
-        print(f"\n{'='*10} {header} {'='*10}")
+        print(f"\n{'=' * 10} {header} {'=' * 10}")
         for name, fn in items:
             probe(name, fn)
     return 0

@@ -21,7 +21,7 @@
 sub_weights:
   cn: { valuation: 0.65, sentiment: 0.20, liquidity: 0.15 }
   hk: { valuation: 0.6, sentiment: 0.25, liquidity: 0.15 }
-  us: { valuation: 0.4, sentiment: 0.35, liquidity: 0.25 }  # US estimated CAPE+PE so val weight slightly lower
+  us: { valuation: 0.35, sentiment: 0.45, liquidity: 0.20 }
 
 # Within each sub-temperature, how to combine the input indicators.
 # Sub-indicator weights MUST sum to 1.0 within each block (live indicators).
@@ -64,17 +64,23 @@ indicator_weights:
     # publish). When NaN, block renormalizes onto the other two. Margin
     # balance (两融) is the classic A-share retail leverage gauge —
     # 2015 peak / 2018-12 trough / 2024-09 trough all tagged it.
-    cn_north_5d:             { weight: 0.35, direction: "+", window: pct_5y }
+    # USD/CNY pressure captures external RMB stress — higher USD/CNY =
+    # weaker RMB = capital outflow pressure = colder (direction "-").
+    cn_north_5d:             { weight: 0.25, direction: "+", window: pct_5y }
     cn_a_turnover_5d:        { weight: 0.25, direction: "+", window: pct_5y }
-    cn_margin_balance:       { weight: 0.40, direction: "+", window: pct_5y }
+    cn_margin_balance:       { weight: 0.35, direction: "+", window: pct_5y }
+    cn_usdcny_pressure:      { weight: 0.15, direction: "-", window: pct_5y }
   cn_liquidity:
     # M2 + social financing are slow stock variables; SHIBOR-1W (used as
     # DR007 proxy — DR007 has no clean free daily source, but SHIBOR-1W
     # tracks it >0.95 post-2014) gives the daily marginal funding signal
     # the monthly aggregates miss.
-    cn_m2_yoy:               { weight: 0.35, direction: "+" }   # higher M2 growth = looser
-    cn_social_financing_12m: { weight: 0.35, direction: "+" }   # higher credit creation = looser
-    cn_dr007:                { weight: 0.30, direction: "-", window: pct_5y }   # higher rate = tighter = cold
+    # Credit impulse = YoY change rate of 12M social financing — captures
+    # whether credit is accelerating (growth) or decelerating (trough).
+    cn_m2_yoy:               { weight: 0.25, direction: "+" }   # higher M2 growth = looser
+    cn_social_financing_12m: { weight: 0.25, direction: "+" }   # higher credit creation = looser
+    cn_credit_impulse:       { weight: 0.25, direction: "+", window: pct_5y }
+    cn_dr007:                { weight: 0.25, direction: "-", window: pct_5y }   # higher rate = tighter = cold
 
   # ============== HK ==============
   hk_valuation:

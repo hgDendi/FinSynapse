@@ -334,21 +334,18 @@ def _gate_check(
     mf_forward_rows: list[ForwardReturnRow],
     pe_forward_rows: list[ForwardReturnRow],
 ) -> dict:
-    """Apply the Phase 1 gate (per module docstring):
+    """Apply the Phase 1 gate.
 
     A market is *beaten* iff multi-factor wins on BOTH:
-      (a) directional_rate(MF) >= directional_rate(PE)            [hit-rate]
-      (b) |ρ(MF, 3m forward)|  >= |ρ(PE, 3m forward)|             [predictive ρ]
+      (a) directional_rate(MF) >= directional_rate(PE)    [hit-rate gate]
+      (b) ρ(MF, 3m forward) < 0 AND |ρ| ≥ RHO_MIN (0.03) [mean-reversion signal]
 
     Gate passes when ≥ 2/3 markets are beaten.
 
-    The ρ component verifies that multi-factor temperature is a
-    *directionally valid* mean-reversion indicator: ρ must be negative
-    (high temperature → lower forward return) with |ρ| ≥ RHO_MIN (0.03).
-    Unlike the Phase 1 docstring draft, this does NOT require beating
-    PE single-factor on |ρ| — CAPE is the purest valuation signal and
-    a composite model will always lose magnitude on this dimension.
-    The gate checks that MF has a *real* signal, not the *strongest* signal.
+    Condition (b) does NOT require |ρ(MF)| >= |ρ(PE)| — CAPE is the purist
+    valuation signal and a composite model will always lose magnitude on
+    this dimension.  The gate only checks that MF has a *real* signal,
+    not the *strongest* signal.
     """
     RHO_MIN = 0.03  # minimum |ρ| for signal to be considered non-trivial
 
@@ -580,9 +577,7 @@ def _bootstrap_confidence(
         # (shouldn't happen with a well-formed weights.yaml).
         configured = cfg.sub_weights.get(market, {})
         subs_present = [
-            s
-            for s in SUB_NAMES
-            if s in sub.columns and sub[s].notna().any() and configured.get(s, 0.0) > 0.0
+            s for s in SUB_NAMES if s in sub.columns and sub[s].notna().any() and configured.get(s, 0.0) > 0.0
         ]
         if len(subs_present) < 2:
             continue

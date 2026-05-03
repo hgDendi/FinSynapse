@@ -145,9 +145,9 @@ The composite temperature combines sub-temperatures with per-market weights:
 
 | Market | valuation | sentiment | liquidity | Rationale |
 |---|---:|---:|---:|---|
-| CN | 0.50 | 0.30 | 0.20 | Valuation-led; sentiment 3-factor (north / turnover / margin); M2 + social financing + SHIBOR-1W |
-| HK | 0.60 | 0.25 | 0.15 | EWH yield as valuation anchor; southbound single-factor sentiment; HIBOR-1M + US real yield/DXY for liquidity |
-| US | 0.40 | 0.35 | 0.25 | PE+CAPE+ERP three-factor valuation (breaks "PE locked at all-time-high"); VIX+HY OAS sentiment; real yield+DXY+NFCI liquidity |
+| CN | 0.65 | 0.20 | 0.15 | Valuation-led; sentiment 4-factor (north / turnover / margin / CNY pressure); M2 + social financing + credit impulse + SHIBOR-1W |
+| HK | 0.60 | 0.25 | 0.15 | EWH yield as valuation anchor; southbound+VHSI sentiment; HIBOR-1M + US real yield/DXY for liquidity |
+| US | 0.35 | 0.45 | 0.20 | PE+CAPE+ERP valuation; VIX+HY OAS+UMich sentiment; real yield+DXY+NFCI+WALCL liquidity |
 
 **Temperature bands** ([`src/finsynapse/notify/state.py`](./src/finsynapse/notify/state.py)):
 
@@ -157,52 +157,54 @@ The composite temperature combines sub-temperatures with per-market weights:
 
 The full indicator → sub-temperature mapping is in §5.2 and [`config/weights.yaml`](./config/weights.yaml). Editing it and rerunning `transform run --layer temperature` is enough — **no need to re-ingest bronze**, since percentile baselines don't depend on the weights.
 
-Backtest verification ([`scripts/backtest_temperature.py`](./scripts/backtest_temperature.py)): current weights pass directional gate 9/9 at 9 historical pivots; strict-zone gate 7-8/9 (depends on whether FRED key is configured).
+Backtest verification ([`scripts/backtest_temperature.py`](./scripts/backtest_temperature.py) + [`scripts/run_validation.py`](./scripts/run_validation.py)): loads 25 historical pivots (US 9, CN 8, HK 8) from [`backtest_pivots.yaml`](./scripts/backtest_pivots.yaml). Gate requires multi-factor to beat PE single-factor in ≥2/3 markets AND show negative Spearman ρ (mean-reversion signal). Currently gate 3/3 PASS.
 
 ### 5.2 Indicator inventory
 
 Each market's three sub-temperatures are weighted combinations of base indicators. **Direction**: `+` = high percentile → hot; `-` = inverse. **Window**: `5y` for fast-regime indicators, `10y` for slow fundamentals.
 
-#### US (composite 0.40 val + 0.35 sent + 0.25 liq)
+#### US (composite 0.35 val + 0.45 sent + 0.20 liq)
 
 | Sub | Indicator | Weight | Dir | Window | Source | Notes |
-|---|---|---:|---|---|---|---|
+|---|---|---|---:|---|---|---|---|
 | val | `us_pe_ttm` | 0.35 | + | 10y | multpl.com | S&P500 TTM PE |
 | val | `us_cape` | 0.35 | + | 10y | multpl.com | Shiller 10Y-smoothed EPS |
-| val | `us_erp` | 0.30 | − | 10y | derived | `100/PE − real yield`; breaks "PE locked at ATH" |
-| sent | `vix` | 0.50 | − | 5y | yfinance | implied vol = fear |
-| sent | `us_hy_oas` | 0.50 | − | 5y | FRED `BAMLH0A0HYM2` | HY credit spread, ⚠️ FRED returns only 3Y rolling since 2026-04 (ICE BofA license change) |
-| liq | `us10y_real_yield` | 0.30 | − | 10y | FRED `DFII10` | high real rate = tight |
-| liq | `dxy` | 0.20 | − | 5y | yfinance | strong USD = tight global liquidity |
-| liq | `us_nfci` | 0.50 | − | 5y | FRED `NFCI` | Chicago Fed composite financial conditions, full 1971+ history |
+| val | `us_erp` | 0.30 | − | 10y | derived | `100/PE − real yield` |
+| sent | `vix` | 0.40 | − | 5y | yfinance | implied vol = fear |
+| sent | `us_hy_oas` | 0.35 | − | 5y | FRED `BAMLH0A0HYM2` | HY credit spread |
+| sent | `us_umich_sentiment` | 0.25 | + | 10y | FRED `UMCSENT` | U. Michigan consumer sentiment |
+| liq | `us10y_real_yield` | 0.25 | − | 10y | FRED `DFII10` | high real rate = tight |
+| liq | `dxy` | 0.15 | − | 5y | yfinance | strong USD = tight global liquidity |
+| liq | `us_nfci` | 0.35 | − | 5y | FRED `NFCI` | Chicago Fed financial conditions |
+| liq | `us_walcl` | 0.25 | + | 5y | FRED `WALCL` | Fed balance sheet (QE/QT cycle) |
 
-#### CN (composite 0.50 val + 0.30 sent + 0.20 liq)
+#### CN (composite 0.65 val + 0.20 sent + 0.15 liq)
 
 | Sub | Indicator | Weight | Dir | Window | Source | Notes |
-|---|---|---:|---|---|---|---|
+|---|---|---|---:|---|---|---|---|
 | val | `csi300_pe_ttm` | 0.50 | + | 10y | AkShare | CSI300 TTM PE |
 | val | `csi300_pb` | 0.50 | + | 10y | AkShare | CSI300 PB |
-| sent | `cn_north_5d` | 0.35 | + | 5y | AkShare | northbound 5d net buy, ⚠️ daily publish stopped 2024-08 (regulator), auto-renorms onto the other two |
+| sent | `cn_north_5d` | 0.25 | + | 5y | AkShare | northbound 5d net buy |
 | sent | `cn_a_turnover_5d` | 0.25 | + | 5y | AkShare | A-share total turnover 5d mean |
-| sent | `cn_margin_balance` | 0.40 | + | 5y | AkShare | SH+SZ margin balance (亿元), classic A-share top/bottom signal |
-| liq | `cn_m2_yoy` | 0.35 | + | 10y | AkShare | M2 YoY |
-| liq | `cn_social_financing_12m` | 0.35 | + | 10y | AkShare | social financing 12M rolling sum |
-| liq | `cn_dr007` | 0.30 | − | 5y | AkShare | actually SHIBOR-1W (DR007 has no clean free daily source, >0.95 correlated) |
+| sent | `cn_margin_balance` | 0.35 | + | 5y | AkShare | SH+SZ margin balance |
+| sent | `cn_usdcny_pressure` | 0.15 | − | 5y | derived | USD/CNY → RMB stress, high = outflow pressure = cold |
+| liq | `cn_m2_yoy` | 0.25 | + | 10y | AkShare | M2 YoY |
+| liq | `cn_social_financing_12m` | 0.25 | + | 10y | AkShare | social financing 12M rolling sum |
+| liq | `cn_credit_impulse` | 0.25 | + | 5y | derived | SF YoY acceleration — captures credit expansion/deceleration |
+| liq | `cn_dr007` | 0.25 | − | 5y | AkShare | actually SHIBOR-1W |
 
 #### HK (composite 0.60 val + 0.25 sent + 0.15 liq)
 
 | Sub | Indicator | Weight | Dir | Window | Source | Notes |
-|---|---|---:|---|---|---|---|
+|---|---|---|---:|---|---|---|---|
 | val | `hk_ewh_yield_ttm` | 1.00 | − | 10y | yfinance EWH | TTM dividend yield (high = cheap = cold) |
-| sent | `cn_south_5d` | 1.00 | + | 5y | AkShare | southbound 5d net buy |
+| sent | `cn_south_5d` | 0.60 | + | 5y | AkShare | southbound 5d net buy |
+| sent | `hk_vhsi` | 0.40 | − | 5y | AkShare | HSI Volatility Index (HK native VIX) |
 | liq | `us10y_real_yield` | 0.30 | − | 10y | FRED `DFII10` | borrowed via USD peg |
 | liq | `dxy` | 0.20 | − | 5y | yfinance | borrowed via USD peg |
-| liq | `hk_hibor_1m` | 0.50 | − | 5y | AkShare `macro_china_hk_market_info` | HKD-side funding cost (HKMA defends peg via this) |
+| liq | `hk_hibor_1m` | 0.50 | − | 5y | AkShare | HKD-side funding cost |
 
-> **HK indicators backlogged but not implemented** (see [`docs/_local/2026-04-29-execution-plan.md`](./docs/_local/) Phase 1d):
-> - **HSI PE**: AkShare `stock_hk_index_value_em` was decommissioned in 2026-04; only alternative is scraping monthly HSI factsheet PDFs (Playwright workload, same fragility as the abandoned PCR effort)
-> - **AH premium index**: historical time-series endpoints all return 404; only spot endpoint works (no historical backfill, would need months of accumulation before percentile is meaningful)
-> - **HSI options PCR**: HKEX has no free daily source; see plan §11.6 v0.6 decision
+> **HK native valuation not yet available**: AkShare `stock_hk_index_value_em` does not exist in the current version; `stock_hk_index_daily_em` returns only price data. HSI PE/PB would require scraping HSI factsheet PDFs (same fragility tier as the abandoned HSI PCR attempt). EWH dividend yield serves as the valuation proxy for now. See `scripts/probe_hk_valuation.py`.
 
 ### 5.3 Weekly attribution
 

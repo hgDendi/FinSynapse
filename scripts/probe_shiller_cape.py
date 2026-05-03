@@ -9,6 +9,7 @@ Run:
 
 Exit code 0 if at least one source works; prints recommendation.
 """
+
 from __future__ import annotations
 
 import io

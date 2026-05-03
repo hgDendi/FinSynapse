@@ -31,14 +31,44 @@ class DashboardData:
         out = {}
         if self.temperature.empty:
             return out
+        temp = self.temperature.copy()
         for m in MARKETS:
-            sub = self.temperature[self.temperature["market"] == m].copy()
+            sub = temp[temp["market"] == m].copy()
             if sub.empty:
                 continue
-            sub["_completeness"] = sub[["valuation", "sentiment", "liquidity"]].notna().sum(axis=1)
+            if "subtemp_completeness" in sub.columns:
+                sub["_completeness"] = sub["subtemp_completeness"]
+            else:
+                sub["_completeness"] = sub[["valuation", "sentiment", "liquidity"]].notna().sum(axis=1)
             recent = sub.sort_values("date").tail(10)
             best = recent.sort_values(["_completeness", "date"], ascending=[False, False]).iloc[0]
             out[m] = best
+        return out
+
+    def latest_complete_date(self) -> dict[str, str | None]:
+        """Latest date per market where all 3 sub-temperatures are available.
+
+        Returns date strings (YYYY-MM-DD) or None for markets with no
+        data. This is the truthful "latest good date" — distinct from
+        `asof()` which returns the raw max date from temperature.parquet
+        and may include rows that are incomplete or misleading.
+        """
+        out: dict[str, str | None] = {}
+        if self.temperature.empty:
+            return {m: None for m in MARKETS}
+        temp = self.temperature.copy()
+        temp["date"] = pd.to_datetime(temp["date"])
+        for m in MARKETS:
+            sub = temp[temp["market"] == m]
+            if sub.empty:
+                out[m] = None
+                continue
+            complete = sub[sub["is_complete"] == True] if "is_complete" in sub.columns else sub  # noqa: E712
+            if complete.empty:
+                out[m] = None
+            else:
+                latest = complete["date"].max()
+                out[m] = latest.strftime("%Y-%m-%d") if pd.notna(latest) else None
         return out
 
     def asof(self) -> pd.Timestamp | None:

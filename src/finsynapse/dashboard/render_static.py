@@ -108,7 +108,11 @@ def _market_history_stats(temperature: pd.DataFrame) -> dict[str, dict]:
 
 
 def _build_market_cards(
-    latest: dict, data_quality: dict, lang: str, history_stats: dict[str, dict] | None = None
+    latest: dict,
+    data_quality: dict,
+    lang: str,
+    history_stats: dict[str, dict] | None = None,
+    complete_dates: dict[str, str | None] | None = None,
 ) -> list[dict]:
     """Compose the per-market hero cards.
 
@@ -117,6 +121,7 @@ def _build_market_cards(
     template close to pure presentation.
     """
     history_stats = history_stats or {}
+    complete_dates = complete_dates or {}
     cards = []
     for market in MARKETS:
         meta = MARKET_META[market]
@@ -143,7 +148,6 @@ def _build_market_cards(
                     ),
                 }
             )
-        # Historical-percentile widget (suggestion #2 from this iteration).
         hist = history_stats.get(market)
         history_widget = None
         if hist is not None:
@@ -155,6 +159,7 @@ def _build_market_cards(
                     hot_temp=hist["hot_temp"], cold_temp=hist["cold_temp"]
                 ),
             }
+        completeness = row.get("subtemp_completeness")
         cards.append(
             {
                 "market": market,
@@ -169,6 +174,10 @@ def _build_market_cards(
                 "sub_temps": sub_temps,
                 "data_quality": data_quality.get(market, "ok"),
                 "history": history_widget,
+                "latest_complete_date": complete_dates.get(market),
+                "subtemp_completeness": int(completeness)
+                if completeness is not None and not pd.isna(completeness)
+                else None,
             }
         )
     return cards
@@ -363,7 +372,7 @@ def _render_one(
     narrative_md, narrative_asof = load_latest_narrative()
     narrative_html = Markup(_md.markdown(narrative_md, extensions=["extra"])) if narrative_md else ""
 
-    market_cards = _build_market_cards(latest, data_quality, lang, history_stats)
+    market_cards = _build_market_cards(latest, data_quality, lang, history_stats, data.latest_complete_date())
     divergence_cards = _build_divergence_cards(data.divergence, lang)
     key_takeaways = _build_key_takeaways(data, latest, divergence_cards, lang)
 

@@ -8,6 +8,7 @@ the akshare_* providers should call.
 Usage:
     uv run python scripts/probe_akshare.py
 """
+
 from __future__ import annotations
 
 import sys
@@ -22,7 +23,7 @@ def probe(name: str, fn, *, sample_rows: int = 3, expect_min_rows: int = 1):
     try:
         df = fn()
     except Exception:
-        print(f"    ✗ FAILED")
+        print("    ✗ FAILED")
         traceback.print_exc(limit=2)
         return None
     if df is None:
@@ -133,7 +134,7 @@ def main() -> int:
         ],
     }
     for header, items in sections.items():
-        print(f"\n{'='*8} {header} {'='*8}")
+        print(f"\n{'=' * 8} {header} {'=' * 8}")
         for name, fn in items:
             probe(name, fn)
     return 0

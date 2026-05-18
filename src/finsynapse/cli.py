@@ -48,9 +48,7 @@ SOURCES = {
     "akshare_flow": run_akshare_flow,
 }
 
-MANUAL_INGEST_SOURCES = {
-    "hsi_monthly_valuation": "PDF archive source; run explicitly with `ingest run` for backfills",
-}
+MANUAL_INGEST_SOURCES: dict[str, str] = {}
 
 
 @ingest_app.command("run")

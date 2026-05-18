@@ -44,6 +44,9 @@ jobs:
       - name: Install Python deps
         run: uv sync --frozen
 
+      - name: Install system deps (poppler for HSI PDF parsing)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
       - name: Ingest all sources (bronze)
         env:
           # FRED key is the only ingest secret. AkShare, yfinance, multpl,

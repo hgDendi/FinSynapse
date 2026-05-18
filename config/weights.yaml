@@ -86,12 +86,11 @@ indicator_weights:
   hk_valuation:
     # EWH (iShares MSCI HK ETF, US-listed) TTM dividend yield as inverse-
     # valuation proxy: HIGH yield = CHEAP = COLD (direction "-").
-    # HSI PE intentionally NOT used: probe 2026-04-29 confirmed AkShare
-    # `stock_hk_index_value_em` no longer exists and `stock_hk_index_daily_em`
-    # endpoint is unstable. Adding HSI PE would require Playwright scraping
-    # HSI factsheet PDFs (same level of fragility as the HSI PCR attempt
-    # plan §11.6 already gave up on). Revisit if a stable source appears.
-    hk_ewh_yield_ttm:        { weight: 1.0, direction: "-" }
+    # HSI PE is the official Hang Seng Index trailing PE from monthly
+    # roundup PDFs — forward-filled to daily in derive_indicators.
+    # HIGH PE = EXPENSIVE = HOT (direction "+").
+    hk_ewh_yield_ttm:        { weight: 0.60, direction: "-" }
+    hk_hsi_pe:               { weight: 0.40, direction: "+" }
   hk_sentiment:
     # Southbound 5d net-buy = mainland-side flow into HK.
     # VHSI (HSI Volatility Index): HK-native fear gauge, similar to VIX for US.

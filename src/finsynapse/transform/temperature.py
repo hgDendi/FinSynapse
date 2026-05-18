@@ -38,6 +38,28 @@ SUBTEMP_FFILL_LIMIT_BDAYS = 1
 # is unchanged.
 MIN_SUB_COVERAGE = 0.5
 
+# When sub-temperatures violently disagree (max − min > this threshold),
+# the weighted-average overall is replaced by the median of the three
+# sub-temperatures. This prevents one panicked sub from hijacking the
+# composite when the other two are calm. Concrete trigger: 2022-03-14
+# (Russia-Ukraine) US sentiment hit 4.2° (VIX/HY/OAS extreme) while
+# valuation was 49.0° and liquidity 49.9° — range=45.7°, but all three
+# pointed cold. The median (49.0°) is the honest centre of the
+# disagreement.
+#
+# Thresholds are market-specific because inter-sub dispersion dynamics
+# differ. CN valuation and liquidity structurally diverge during
+# counter-cyclical PBOC easing (market crashes → PBOC loosens → liq goes
+# hot while val stays cold). That "disagreement" is the expected CN macro
+# pattern, not a gateworthy event. US subs are more independent (VIX can
+# spike 50 points while PE stays flat), so a lower threshold catches
+# single-sub panic without suppressing valid valuation signals.
+DISPERSION_MEDIAN_THRESHOLD: dict[str, float] = {
+    "us": 42.0,  # catches Russia-Ukraine (45.7°) and Volmageddon (~48°)
+    "hk": 50.0,  # conservative: HSI PE monthly ffill won't spike daily
+    "cn": 60.0,  # high: PBOC counter-cyclical easing is expected, not noisy
+}
+
 
 def _expected_stale_subs(d, market: str) -> set[str]:
     """Sub-temps whose primary input is structurally absent on date `d`.
@@ -258,6 +280,20 @@ def _compute_market_rows(
             overall = overall.add(t.fillna(0) * eff_w, fill_value=0)
             weight_sum = weight_sum.add(valid.astype(float) * eff_w, fill_value=0)
         overall = overall.where(weight_sum > 0) / weight_sum.where(weight_sum > 0)
+
+        # --- dual-factor confirmation gate ---
+        # When sub-temps violently disagree, the weighted average can be
+        # hijacked by the most extreme sub. Fall back to the median, which
+        # is the honest centre of the disagreement and naturally suppresses
+        # single-sub outliers. Only applies when ≥2 subs are present.
+        sub_vals = pd.DataFrame({sub: sub_temps_used[sub] for sub in SUB_NAMES if sub in sub_temps_used})
+        if not sub_vals.empty and sub_vals.shape[1] >= 2:
+            sub_range = sub_vals.max(axis=1) - sub_vals.min(axis=1)
+            threshold = DISPERSION_MEDIAN_THRESHOLD.get(market, 50.0)
+            disagree_mask = sub_range > threshold
+            if disagree_mask.any():
+                sub_median = sub_vals.median(axis=1)
+                overall = overall.where(~disagree_mask, sub_median)
 
         df = pd.DataFrame(
             {

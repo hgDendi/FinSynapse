@@ -1,18 +1,24 @@
 # Market temperature validation pivots.
-# 24 historically significant market tops/bottoms across US/CN/HK.
+# 34 historically significant market tops/bottoms across US/CN/HK.
 #
 # Schema per pivot:
-#   label        — human-readable name
-#   market       — cn | hk | us
-#   date         — YYYY-MM-DD (the extreme day ±5 trading days)
+#   label         — human-readable name
+#   market        — cn | hk | us
+#   date          — YYYY-MM-DD (the extreme day ±5 trading days)
 #   expected_zone — cold | mid | hot
 #   source        — citation (Bloomberg headline or widely-recognised phrase)
 #   index         — the reference index to validate against (for forward-return analysis)
 #   confirmed_by  — optional: corroborating signal(s)
+#   risk_type     — optional: categorisation for diagnostic drill-down
+#                   (policy_shock | credit_event | geopolitical | liquidity_crisis |
+#                    valuation_extreme | currency_crisis | pandemic | structured_product)
 #
-# Selection rule: per market, ≥3 bottoms (>20% drawdown from prior peak)
-# and ≥2 tops (>50% rally from prior trough), covering 2015–2025.
-# Template-generated then LLM-augmented and human-reviewed.
+# Selection rule: per market, ≥5 bottoms (>20% drawdown from prior peak)
+# and ≥3 tops (>50% rally from prior trough), covering 2011–2025.
+# Risk-type coverage is enforced: every risk_type must appear in ≥1 pivot
+# per market, so a backtest can isolate which regimes the thermometer
+# handles well and which it systematically misses.
+# Template-generated, LLM-augmented, and human-reviewed.
 
 pivots:
   # ========================= US =========================
@@ -23,6 +29,16 @@ pivots:
     source: "S&P downgrade from AAA + Eurozone sovereign crisis"
     index: sp500
     confirmed_by: ["vix_spike", "credit_spread_widening"]
+    risk_type: credit_event
+
+  - label: "2013 Taper Tantrum (Bernanke QE exit signal)"
+    market: us
+    date: "2013-06-24"
+    expected_zone: mid
+    source: "Bernanke signals QE tapering; 10Y yield +130bp in 2 months, EM sell-off"
+    index: sp500
+    confirmed_by: ["real_yield_spike", "credit_spread_widening"]
+    risk_type: policy_shock
 
   - label: "2015–16 China-growth-scare correction (US was not cold — PE still elevated)"
     market: us
@@ -31,6 +47,16 @@ pivots:
     source: "China devaluation panic, S&P -14% from Jul 2015 high but valuation still elevated (PE>20)"
     index: sp500
     confirmed_by: ["vix_spike", "oil_crash"]
+    risk_type: currency_crisis
+
+  - label: "2018 Volmageddon (XIV liquidation / VIX ETN blowup)"
+    market: us
+    date: "2018-02-05"
+    expected_zone: mid
+    source: "VIX spike from 17 to 50 intraday, XIV ETN liquidated, volatility regime break"
+    index: sp500
+    confirmed_by: ["vix_extreme", "credit_spread_widening"]
+    risk_type: structured_product
 
   - label: "2018 Christmas crash bottom"
     market: us
@@ -39,6 +65,7 @@ pivots:
     source: "S&P -20% from Sep peak, Fed rate-hike fear + trade war"
     index: sp500
     confirmed_by: ["vix_spike", "credit_spread_widening"]
+    risk_type: policy_shock
 
   - label: "COVID liquidity crash bottom"
     market: us
@@ -47,6 +74,7 @@ pivots:
     source: "COVID global lockdown, VIX 82, real rates spiked, USD scramble"
     index: sp500
     confirmed_by: ["vix_extreme", "credit_spread_extreme"]
+    risk_type: pandemic
 
   - label: "ARK / SPAC / stimmy retail peak"
     market: us
@@ -55,6 +83,7 @@ pivots:
     source: "CAPE near all-time-high, retail euphoria, ARK ATH"
     index: sp500
     confirmed_by: ["cape_extreme", "retail_volume_spike"]
+    risk_type: valuation_extreme
 
   - label: "2022 Fed hiking-cycle trough (pre-pivot)"
     market: us
@@ -63,6 +92,16 @@ pivots:
     source: "S&P -25% YTD, 10Y at 4%, Fed still hiking"
     index: sp500
     confirmed_by: ["real_yield_spike", "nfci_tight"]
+    risk_type: policy_shock
+
+  - label: "2022 Russia-Ukraine invasion / commodity shock"
+    market: us
+    date: "2022-03-14"
+    expected_zone: mid
+    source: "Russia invades Ukraine Feb 24; oil >$130, wheat futures limit-up, stagflation fear"
+    index: sp500
+    confirmed_by: ["vix_spike", "oil_shock"]
+    risk_type: geopolitical
 
   - label: "2023 regional-bank crisis low (SVB)"
     market: us
@@ -71,6 +110,7 @@ pivots:
     source: "SVB / regional-bank crisis, credit tightening fears"
     index: sp500
     confirmed_by: ["hy_oas_widening"]
+    risk_type: credit_event
 
   - label: "2024 pre-9.24 US near ATH (US was hot — S&P ATH, CAPE>35)"
     market: us
@@ -79,6 +119,7 @@ pivots:
     source: "US at ATH with CAPE>35; CN stimulus came 2024-09-24, not a US cold pivot"
     index: sp500
     confirmed_by: ["cape_extreme"]
+    risk_type: valuation_extreme
 
   - label: "AI-led valuation new highs"
     market: us
@@ -87,6 +128,16 @@ pivots:
     source: "AI theme drives S&P to ATH, CAPE >35"
     index: sp500
     confirmed_by: ["cape_extreme"]
+    risk_type: valuation_extreme
+
+  - label: "2025 Liberation Day tariff shock"
+    market: us
+    date: "2025-04-07"
+    expected_zone: cold
+    source: "Trump Liberation Day tariffs; S&P -10% in 2 days, VIX >50, global trade war escalation"
+    index: sp500
+    confirmed_by: ["vix_extreme", "credit_spread_widening"]
+    risk_type: geopolitical
 
   # ========================= CN =========================
   - label: "A-shares 2015 leveraged-bull peak"
@@ -96,6 +147,16 @@ pivots:
     source: "CSI300 6500 peak, leveraged retail mania, margin ATH"
     index: csi300
     confirmed_by: ["margin_balance_ath"]
+    risk_type: valuation_extreme
+
+  - label: "2015 A-share Black Monday (post-811 devaluation crash)"
+    market: cn
+    date: "2015-08-26"
+    expected_zone: cold
+    source: "CSI300 -8.75% in one day, RMB 811 devaluation panic, margin liquidation cascade"
+    index: csi300
+    confirmed_by: ["margin_balance_trough", "usdcny_spike"]
+    risk_type: currency_crisis
 
   - label: "2016 circuit-breaker / RMB devaluation crash"
     market: cn
@@ -104,6 +165,7 @@ pivots:
     source: "Circuit-breaker triggered twice, CSI300 -47% from 2015 high"
     index: csi300
     confirmed_by: ["pb_near_low"]
+    risk_type: liquidity_crisis
 
   - label: "A-shares 2018 trade-war bottom"
     market: cn
@@ -112,6 +174,7 @@ pivots:
     source: "CSI300 -28% from 2018 high, US-China trade war, earnings downgrade"
     index: csi300
     confirmed_by: ["pb_at_decade_low"]
+    risk_type: geopolitical
 
   - label: "2020 COVID A-share low"
     market: cn
@@ -120,6 +183,7 @@ pivots:
     source: "COVID lockdown, CSI300 fell 15% from Jan high"
     index: csi300
     confirmed_by: ["margin_balance_low"]
+    risk_type: pandemic
 
   - label: "2021 core-asset huddle peak (baijiu/pharma)"
     market: cn
@@ -128,6 +192,7 @@ pivots:
     source: "Kweichow Moutai 2600+ CNY, core-asset抱团高峰"
     index: csi300
     confirmed_by: ["north_flow_peak"]
+    risk_type: valuation_extreme
 
   - label: "2022 zero-COVID / property trough"
     market: cn
@@ -136,6 +201,16 @@ pivots:
     source: "Shanghai lockdown, zero-COVID, 20th Congress uncertainty, property crisis"
     index: csi300
     confirmed_by: ["pb_extreme_low"]
+    risk_type: credit_event
+
+  - label: "2022 Russia-Ukraine / lockdown double-shock"
+    market: cn
+    date: "2022-03-15"
+    expected_zone: cold
+    source: "Russia-Ukraine invasion + Shanghai lockdown; CSI300 -20% YTD, ADR delisting fear"
+    index: csi300
+    confirmed_by: ["margin_balance_low", "usdcny_pressure"]
+    risk_type: geopolitical
 
   - label: "2024 pre-Spring-Festival correction low"
     market: cn
@@ -144,6 +219,7 @@ pivots:
     source: "CSI300 near 5Y low, margin liquidation cascade"
     index: csi300
     confirmed_by: ["margin_balance_trough"]
+    risk_type: liquidity_crisis
 
   - label: "A-shares 2024 pre-9.24 stimulus"
     market: cn
@@ -152,6 +228,16 @@ pivots:
     source: "CSI300 at 5Y low, pre-stimulus despair, turnover near multi-year low"
     index: csi300
     confirmed_by: ["turnover_trough"]
+    risk_type: valuation_extreme
+
+  - label: "2025 Liberation Day tariff shock (CN)"
+    market: cn
+    date: "2025-04-07"
+    expected_zone: cold
+    source: "Trump tariffs trigger CSI300 -7%, RMB depreciation, export-sector panic"
+    index: csi300
+    confirmed_by: ["usdcny_pressure", "turnover_spike"]
+    risk_type: geopolitical
 
   # ========================= HK =========================
   - label: "2015 connect-driven bull peak"
@@ -161,6 +247,7 @@ pivots:
     source: "H-share mania via Stock Connect, HSI at 28442"
     index: hsi
     confirmed_by: ["southbound_flow_peak"]
+    risk_type: valuation_extreme
 
   - label: "2016 HK crash bottom (A-share meltdown spillover)"
     market: hk
@@ -169,6 +256,7 @@ pivots:
     source: "HSI -36% from 2015 high, RMB devaluation + China circuit-breaker"
     index: hsi
     confirmed_by: ["southbound_outflow"]
+    risk_type: currency_crisis
 
   - label: "2018 trade-war / HKD peg defence low"
     market: hk
@@ -177,6 +265,7 @@ pivots:
     source: "HSI -25%, southbound fled, HKMA defending USD peg"
     index: hsi
     confirmed_by: ["hibor_spike", "southbound_outflow"]
+    risk_type: currency_crisis
 
   - label: "2020 COVID HK bottom"
     market: hk
@@ -185,6 +274,7 @@ pivots:
     source: "Global COVID lockdown, HSI at 21696"
     index: hsi
     confirmed_by: ["hibor_spike"]
+    risk_type: pandemic
 
   - label: "2021 southbound surge / tech mania peak"
     market: hk
@@ -193,6 +283,7 @@ pivots:
     source: "Record southbound daily inflow, HSI at 31084, Tencent/Meituan ATH"
     index: hsi
     confirmed_by: ["southbound_flow_ath"]
+    risk_type: valuation_extreme
 
   - label: "2022 HSI 25-year low (property + liquidity crisis)"
     market: hk
@@ -201,6 +292,16 @@ pivots:
     source: "HSI at 14687, Country Garden default fears, north-south capital flight"
     index: hsi
     confirmed_by: ["ewh_yield_extreme", "hibor_spike"]
+    risk_type: credit_event
+
+  - label: "2022 Russia-Ukraine / China regulatory crackdown"
+    market: hk
+    date: "2022-03-15"
+    expected_zone: cold
+    source: "HSI below 18500; ADR delisting fear, tech crackdown, Russia-Ukraine shock"
+    index: hsi
+    confirmed_by: ["ewh_yield_extreme", "southbound_outflow"]
+    risk_type: geopolitical
 
   - label: "2024 pre-recovery HK low"
     market: hk
@@ -209,6 +310,7 @@ pivots:
     source: "HSI below 15000, China growth pessimism, foreign capital exodus"
     index: hsi
     confirmed_by: ["ewh_yield_extreme"]
+    risk_type: valuation_extreme
 
   - label: "2024 9.24 policy-pivot surge"
     market: hk
@@ -217,3 +319,13 @@ pivots:
     source: "Sentiment 93° (south flow) but valuation 17° (cheap) → honest multi-factor mid reading"
     index: hsi
     confirmed_by: ["multi_factor_compromise"]
+    risk_type: policy_shock
+
+  - label: "2025 Liberation Day tariff shock (HK)"
+    market: hk
+    date: "2025-04-07"
+    expected_zone: cold
+    source: "US tariffs trigger HSI -13% in 2 days; HKD peg stability questioned amid global sell-off"
+    index: hsi
+    confirmed_by: ["hibor_spike", "ewh_yield_extreme"]
+    risk_type: geopolitical

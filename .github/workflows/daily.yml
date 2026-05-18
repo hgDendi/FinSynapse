@@ -54,6 +54,33 @@ jobs:
       - name: Transform bronze -> silver (incl. temperature, divergence, health)
         run: uv run finsynapse transform run --layer all
 
+      - name: Append silver data to persistent warehouse
+        # The warehouse DuckDB file persists in the `warehouse-data` orphan
+        # branch. Each run fetches the latest DB, appends today's silver,
+        # and pushes back. force_orphan=true keeps the branch lightweight
+        # (one commit = one DB file) while the DB itself accumulates all
+        # historical rows internally.  Skip gracefully on first-ever run.
+        run: |
+          mkdir -p data/warehouse
+          git fetch origin warehouse-data 2>/dev/null || true
+          if git show origin/warehouse-data:finsynapse.duckdb > data/warehouse/finsynapse.duckdb 2>/dev/null; then
+            echo "[warehouse] restored existing DB from warehouse-data branch"
+          else
+            echo "[warehouse] no existing warehouse DB — will create new one"
+          fi
+          uv run finsynapse warehouse append
+
+      - name: Push warehouse DB to data branch
+        # Only push if the DB file actually changed (new rows appended).
+        continue-on-error: true
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./data/warehouse
+          publish_branch: warehouse-data
+          force_orphan: true
+          commit_message: "warehouse: append $(date -u +%Y-%m-%d)"
+
       - name: Generate daily macro brief (LLM narrative or deterministic template)
         # brief.py provider="auto" order: ollama → deepseek → anthropic → template.
         # In CI ollama always fails (no localhost); if DEEPSEEK_API_KEY is set

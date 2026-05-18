@@ -25,11 +25,13 @@ transform_app = typer.Typer(no_args_is_help=True, help="Transform bronze -> silv
 dashboard_app = typer.Typer(no_args_is_help=True, help="Local Streamlit app + static HTML for GH Pages")
 notify_app = typer.Typer(no_args_is_help=True, help="State-change push notifications (Bark / Telegram)")
 report_app = typer.Typer(no_args_is_help=True, help="LLM-narrated daily macro briefs (Phase 3)")
+warehouse_app = typer.Typer(no_args_is_help=True, help="Persistent DuckDB warehouse for daily data accumulation")
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(transform_app, name="transform")
 app.add_typer(dashboard_app, name="dashboard")
 app.add_typer(notify_app, name="notify")
 app.add_typer(report_app, name="report")
+app.add_typer(warehouse_app, name="warehouse")
 
 
 SOURCES = {
@@ -306,6 +308,82 @@ def report_brief(
     )
     if llm.error:
         typer.secho(f"[brief] LLM fallback reason: {llm.error}", fg=typer.colors.YELLOW)
+
+
+# ---------------------------------------------------------------------------
+# warehouse
+# ---------------------------------------------------------------------------
+
+
+@warehouse_app.command("append")
+def warehouse_append(
+    db_path: str | None = typer.Option(
+        None, "--db-path", help="DuckDB path (default: data/warehouse/finsynapse.duckdb)"
+    ),
+    silver_dir: str | None = typer.Option(None, "--silver-dir", help="Silver directory (default: data/silver)"),
+) -> None:
+    """Append today's silver parquet data into the persistent warehouse.
+
+    Idempotent: rows already present (same date + key) are skipped.
+    Run this daily after `transform run` to accumulate a multi-year
+    local database.
+    """
+    from finsynapse.warehouse.store import Warehouse
+
+    wh = Warehouse(db_path=db_path)
+    try:
+        results = wh.append_all(silver_dir=silver_dir)
+        for r in results:
+            if r["status"] == "appended":
+                typer.secho(
+                    f"  ✓ {r['table']}: +{r['new_rows']} rows (total {r['total_rows']:,}, "
+                    f"{r['min_date']}..{r['max_date']})",
+                    fg=typer.colors.GREEN,
+                )
+            elif r["status"] == "skipped":
+                typer.secho(f"  - {r['table']}: {r.get('reason', 'skipped')}", fg=typer.colors.YELLOW)
+            else:
+                typer.secho(f"  ✗ {r['table']}: {r.get('reason', 'error')}", fg=typer.colors.RED)
+    finally:
+        wh.close()
+
+
+@warehouse_app.command("status")
+def warehouse_status(
+    db_path: str | None = typer.Option(None, "--db-path", help="DuckDB path"),
+) -> None:
+    """Show row counts and date ranges for every table in the warehouse."""
+    from finsynapse.warehouse.store import Warehouse
+
+    wh = Warehouse(db_path=db_path)
+    try:
+        df = wh.status()
+        if df.empty:
+            typer.echo("Warehouse is empty. Run `warehouse append` first.")
+        else:
+            typer.echo(df.to_string(index=False))
+    finally:
+        wh.close()
+
+
+@warehouse_app.command("rebuild")
+def warehouse_rebuild(
+    db_path: str | None = typer.Option(None, "--db-path", help="DuckDB path"),
+    silver_dir: str | None = typer.Option(None, "--silver-dir", help="Silver directory"),
+) -> None:
+    """Full rebuild: drop all tables and re-insert from current silver layer.
+
+    Use when silver data was rebuilt with corrected/updated upstream values.
+    """
+    from finsynapse.warehouse.store import Warehouse
+
+    wh = Warehouse(db_path=db_path)
+    try:
+        results = wh.rebuild_all(silver_dir=silver_dir)
+        for r in results:
+            typer.secho(f"  ✓ {r['table']}: {r.get('total_rows', 0):,} rows", fg=typer.colors.GREEN)
+    finally:
+        wh.close()
 
 
 if __name__ == "__main__":

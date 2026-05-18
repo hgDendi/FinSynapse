@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0.0",
+  "asof": "2026-05-18",
+  "market_asof": {
+    "cn": "2026-05-18",
+    "hk": "2026-05-18",
+    "us": "2026-05-18"
+  },
+  "latest_complete_date": {
+    "cn": "2026-05-18",
+    "hk": "2026-05-18",
+    "us": "2026-05-18"
+  },
+  "raw_temperature_asof": "2026-05-18",
+  "generated_at_utc": "2026-05-18T10:58:28Z",
+  "endpoints": {
+    "temperature_latest.json": {
+      "path": "api/temperature_latest.json",
+      "description": "Per-market latest temperature: overall + valuation/sentiment/liquidity sub-temps + 1-week change attribution."
+    },
+    "indicators_latest.json": {
+      "path": "api/indicators_latest.json",
+      "description": "Latest available value for each factor, with rolling percentiles (5y/10y), source, and staleness."
+    },
+    "divergence_latest.json": {
+      "path": "api/divergence_latest.json",
+      "description": "Active divergence signals from the last 90 days, sorted by product strength."
+    },
+    "temperature_history.json.gz": {
+      "path": "api/temperature_history.json.gz",
+      "description": "Per-market full daily history of overall + sub-temps. Gzipped JSON."
+    },
+    "manifest.json": {
+      "path": "api/manifest.json",
+      "description": "Schema version, per-market as-of dates, build time, and endpoint inventory."
+    }
+  }
+}

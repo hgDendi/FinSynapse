@@ -1,0 +1,439 @@
+{
+  "schema_version": "2.0.0",
+  "asof": "2026-05-18",
+  "raw_percentile_asof": "2026-05-18",
+  "indicators": [
+    {
+      "indicator": "cn_a_turnover_5d",
+      "value": 153706370896.2,
+      "percentile_5y": 93.88888888888889,
+      "percentile_10y": 96.94444444444444,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "akshare_cn"
+    },
+    {
+      "indicator": "cn_credit_impulse",
+      "value": -0.007227605437434614,
+      "percentile_5y": 45.714285714285715,
+      "percentile_10y": 30.678104575163403,
+      "last_seen": "2026-04-06",
+      "days_stale": 42,
+      "source": "derived"
+    },
+    {
+      "indicator": "cn_dr007",
+      "value": 1.322,
+      "percentile_5y": 0.6349206349206349,
+      "percentile_10y": 0.3504161191414805,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "akshare_cn"
+    },
+    {
+      "indicator": "cn_m2_yoy",
+      "value": 8.6,
+      "percentile_5y": 43.611111111111114,
+      "percentile_10y": 45.29761904761905,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "akshare_cn"
+    },
+    {
+      "indicator": "cn_margin_balance",
+      "value": 28675.4966284,
+      "percentile_5y": 99.92063492063492,
+      "percentile_10y": 99.96031746031746,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "akshare_cn"
+    },
+    {
+      "indicator": "cn_north_5d",
+      "value": -50.35970000000009,
+      "percentile_5y": 27.063492063492063,
+      "percentile_10y": 17.345132743362832,
+      "last_seen": "2024-08-16",
+      "days_stale": 640,
+      "source": "akshare_flow"
+    },
+    {
+      "indicator": "cn_social_financing_12m",
+      "value": null,
+      "percentile_5y": null,
+      "percentile_10y": null,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "akshare_cn"
+    },
+    {
+      "indicator": "cn_south_5d",
+      "value": 13.85439999999997,
+      "percentile_5y": 19.841269841269842,
+      "percentile_10y": 22.61904761904762,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "akshare_flow"
+    },
+    {
+      "indicator": "cn_usdcny_pressure",
+      "value": 6.785099983215332,
+      "percentile_5y": 24.047619047619047,
+      "percentile_10y": 35.595238095238095,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "derived"
+    },
+    {
+      "indicator": "csi300",
+      "value": 4859.58984375,
+      "percentile_5y": 85.64593301435407,
+      "percentile_10y": 85.64593301435407,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "csi300_pb",
+      "value": 1.44,
+      "percentile_5y": 65.11904761904762,
+      "percentile_10y": 47.519841269841265,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "akshare_cn"
+    },
+    {
+      "indicator": "csi300_pe_ttm",
+      "value": 13.78,
+      "percentile_5y": 92.02380952380952,
+      "percentile_10y": 84.8015873015873,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "akshare_cn"
+    },
+    {
+      "indicator": "dxy",
+      "value": 99.2699966430664,
+      "percentile_5y": 34.04761904761905,
+      "percentile_10y": 60.79365079365079,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "gold_futures",
+      "value": 4555.7998046875,
+      "percentile_5y": 93.84920634920636,
+      "percentile_10y": 96.92460317460318,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "hk_aggregate_balance",
+      "value": 54125.0,
+      "percentile_5y": 51.269841269841265,
+      "percentile_10y": 26.42857142857143,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "hkma_monetary_base"
+    },
+    {
+      "indicator": "hk_ewh_yield_ttm",
+      "value": 4.588528780155393,
+      "percentile_5y": 81.5079365079365,
+      "percentile_10y": 87.42063492063492,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_hk"
+    },
+    {
+      "indicator": "hk_monetary_base",
+      "value": 2068729.0,
+      "percentile_5y": 71.66666666666667,
+      "percentile_10y": 81.58730158730158,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "hkma_monetary_base"
+    },
+    {
+      "indicator": "hkdcny",
+      "value": 0.866258978843689,
+      "percentile_5y": 24.92063492063492,
+      "percentile_10y": 35.1984126984127,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "hsi",
+      "value": 25962.73046875,
+      "percentile_5y": 84.2063492063492,
+      "percentile_10y": 64.16666666666667,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "sp500",
+      "value": 7408.5,
+      "percentile_5y": 99.76190476190476,
+      "percentile_10y": 99.88095238095238,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "us10y_real_yield",
+      "value": 2.1,
+      "percentile_5y": 88.17460317460318,
+      "percentile_10y": 94.08730158730158,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "treasury_real_yield"
+    },
+    {
+      "indicator": "us10y_yield",
+      "value": 4.59499979019165,
+      "percentile_5y": 95.23809523809523,
+      "percentile_10y": 97.61904761904762,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "us2y_yield",
+      "value": 4.09,
+      "percentile_5y": 59.8015873015873,
+      "percentile_10y": 79.90079365079366,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "treasury_yield_curve"
+    },
+    {
+      "indicator": "us3m_yield",
+      "value": 3.69,
+      "percentile_5y": 33.01587301587301,
+      "percentile_10y": 66.5079365079365,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "treasury_yield_curve"
+    },
+    {
+      "indicator": "us_baa10y_spread",
+      "value": 1.62,
+      "percentile_5y": 19.960317460317462,
+      "percentile_10y": 10.317460317460316,
+      "last_seen": "2026-05-14",
+      "days_stale": 4,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_cape",
+      "value": 41.66,
+      "percentile_5y": 99.96031746031746,
+      "percentile_10y": 99.98015873015873,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "multpl"
+    },
+    {
+      "indicator": "us_cape_shiller",
+      "value": 39.583505867263725,
+      "percentile_5y": 97.81746031746032,
+      "percentile_10y": 98.90873015873017,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "yale_shiller"
+    },
+    {
+      "indicator": "us_effr",
+      "value": 3.63,
+      "percentile_5y": 30.198412698412696,
+      "percentile_10y": 65.09920634920636,
+      "last_seen": "2026-05-14",
+      "days_stale": 4,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_erp",
+      "value": 1.034796238244514,
+      "percentile_5y": 0.11904761904761905,
+      "percentile_10y": 0.05952380952380953,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "derived"
+    },
+    {
+      "indicator": "us_hy_oas",
+      "value": 2.76,
+      "percentile_5y": 10.941475826972011,
+      "percentile_10y": 10.941475826972011,
+      "last_seen": "2026-05-14",
+      "days_stale": 4,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_nfci",
+      "value": -0.524,
+      "percentile_5y": 18.412698412698415,
+      "percentile_10y": 40.33730158730159,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_on_rrp",
+      "value": 0.647,
+      "percentile_5y": 2.4603174603174605,
+      "percentile_10y": 12.380952380952381,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_pe_ttm",
+      "value": 31.9,
+      "percentile_5y": 99.96031746031746,
+      "percentile_10y": 93.11507936507937,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "multpl"
+    },
+    {
+      "indicator": "us_reserve_balances",
+      "value": 3102810.0,
+      "percentile_5y": 69.72010178117048,
+      "percentile_10y": 69.72010178117048,
+      "last_seen": "2026-05-13",
+      "days_stale": 5,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_shiller_real_dividend",
+      "value": null,
+      "percentile_5y": null,
+      "percentile_10y": null,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "yale_shiller"
+    },
+    {
+      "indicator": "us_shiller_real_earnings",
+      "value": null,
+      "percentile_5y": null,
+      "percentile_10y": null,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "yale_shiller"
+    },
+    {
+      "indicator": "us_shiller_real_price",
+      "value": 7259.22,
+      "percentile_5y": 99.56349206349206,
+      "percentile_10y": 99.78174603174604,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "yale_shiller"
+    },
+    {
+      "indicator": "us_sofr",
+      "value": 3.56,
+      "percentile_5y": 30.317460317460316,
+      "percentile_10y": 56.63542180562408,
+      "last_seen": "2026-05-14",
+      "days_stale": 4,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_t10y2y",
+      "value": 0.5,
+      "percentile_5y": 66.62698412698413,
+      "percentile_10y": 54.920634920634924,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "treasury_yield_curve"
+    },
+    {
+      "indicator": "us_t10y3m",
+      "value": 0.8999999999999999,
+      "percentile_5y": 76.42857142857142,
+      "percentile_10y": 62.32142857142857,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "treasury_yield_curve"
+    },
+    {
+      "indicator": "us_tga_balance",
+      "value": 802412.0,
+      "percentile_5y": 76.34920634920634,
+      "percentile_10y": 77.42063492063492,
+      "last_seen": "2026-05-14",
+      "days_stale": 4,
+      "source": "treasury_dts"
+    },
+    {
+      "indicator": "us_tga_deposits",
+      "value": 324909.0,
+      "percentile_5y": 96.18021547502448,
+      "percentile_10y": 96.18021547502448,
+      "last_seen": "2026-05-14",
+      "days_stale": 4,
+      "source": "treasury_dts"
+    },
+    {
+      "indicator": "us_tga_withdrawals",
+      "value": 329917.0,
+      "percentile_5y": 95.78844270323212,
+      "percentile_10y": 95.78844270323212,
+      "last_seen": "2026-05-14",
+      "days_stale": 4,
+      "source": "treasury_dts"
+    },
+    {
+      "indicator": "us_tr_cape_shiller",
+      "value": 42.217739336169224,
+      "percentile_5y": 95.9920634920635,
+      "percentile_10y": 97.99603174603175,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "yale_shiller"
+    },
+    {
+      "indicator": "us_umich_sentiment",
+      "value": null,
+      "percentile_5y": null,
+      "percentile_10y": null,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "fred"
+    },
+    {
+      "indicator": "us_walcl",
+      "value": 6728502.0,
+      "percentile_5y": 23.214285714285715,
+      "percentile_10y": 49.345238095238095,
+      "last_seen": "2026-05-18",
+      "days_stale": 0,
+      "source": "fred"
+    },
+    {
+      "indicator": "usdcny",
+      "value": 6.785099983215332,
+      "percentile_5y": 24.484126984126984,
+      "percentile_10y": 35.932539682539684,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    },
+    {
+      "indicator": "vix",
+      "value": 18.43000030517578,
+      "percentile_5y": 53.96825396825397,
+      "percentile_10y": 60.198412698412696,
+      "last_seen": "2026-05-15",
+      "days_stale": 3,
+      "source": "yfinance_macro"
+    }
+  ]
+}
